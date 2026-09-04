@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// With static hosting there is no server of your own in the request path, so
+// these rules ARE the backend. Anything not explicitly allowed here is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId}/workouts/{workoutId} {
+      // Ownership: you can only ever touch documents under your own uid.
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Shape: reject anything that isn't the document we expect, so a
+      // compromised client can't stuff arbitrary payloads into the collection.
+      function isValidWorkout() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['exercise', 'weight', 'reps', 'createdAt'])
+          && data.keys().hasAll(['exercise', 'weight', 'reps', 'createdAt'])
+          && data.exercise is string
+          && data.exercise.size() > 0
+          && data.exercise.size() <= 100
+          && data.weight is number
+          && data.weight >= 0
+          && data.weight <= 2000
+          && data.reps is int
+          && data.reps > 0
+          && data.reps <= 1000
+          && data.createdAt == request.time;
+      }
+
+      allow read, delete: if isOwner();
+      allow create: if isOwner() && isValidWorkout();
+
+      // No update path in the app today. Add one deliberately rather than
+      // leaving the door open — an edit rule also has to pin `createdAt` so a
+      // client can't rewrite history.
+      allow update: if false;
+    }
+
+    // Explicit catch-all. Redundant given the default, but it documents intent
+    // and stops a stray nested `match` from widening access by accident.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
