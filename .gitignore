@@ -25,3 +25,7 @@ vite.config.ts.timestamp-*
 # Firebase
 .firebase/
 *-debug.log
+
+# IDEs
+.idea/
+.vscode/
