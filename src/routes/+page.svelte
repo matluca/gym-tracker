@@ -1,16 +1,33 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import ExercisePicker, { type PickerOption } from '$lib/components/ExercisePicker.svelte';
+	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { auth, initAuth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
+	import {
+		addExercise,
+		DEFAULT_EXERCISES,
+		exerciseLabel,
+		subscribeToExercises
+	} from '$lib/firebase/exercises';
 	import {
 		addWorkout,
 		deleteWorkout,
 		subscribeToWorkouts,
 		type Workout
 	} from '$lib/firebase/workouts';
+	import { i18n } from '$lib/i18n.svelte';
+
+	const t = $derived(i18n.t);
+
+	// Keep <html lang> in step so screen readers and hyphenation use the right language.
+	$effect(() => {
+		document.documentElement.lang = i18n.locale;
+	});
 
 	let workouts = $state<Workout[]>([]);
+	let customExercises = $state<string[]>([]);
 	let listError = $state<string | null>(null);
 	let saveError = $state<string | null>(null);
 	let saving = $state(false);
@@ -19,6 +36,25 @@
 	let exercise = $state('');
 	let weight = $state<number | null>(null);
 	let reps = $state<number | null>(null);
+
+	// Built-ins + the user's own, de-duplicated case-insensitively. Exercises
+	// that only appear in logged sets are included too, so history from before
+	// the picker existed stays selectable.
+	const exerciseOptions = $derived.by((): PickerOption[] => {
+		const byKey = new Map<string, PickerOption>();
+		for (const name of [
+			...DEFAULT_EXERCISES.map((e) => e.en),
+			...customExercises,
+			...workouts.map((w) => w.exercise)
+		]) {
+			const value = name.trim();
+			const key = value.toLowerCase();
+			if (key && !byKey.has(key)) {
+				byKey.set(key, { value, label: exerciseLabel(value, i18n.locale) });
+			}
+		}
+		return [...byKey.values()];
+	});
 
 	const canSubmit = $derived(
 		exercise.trim().length > 0 &&
@@ -60,6 +96,28 @@
 		);
 	});
 
+	$effect(() => {
+		const uid = auth.user?.uid;
+		if (!uid) return;
+
+		return subscribeToExercises(
+			uid,
+			(next) => (customExercises = next),
+			(error) => (saveError = error.message)
+		);
+	});
+
+	function handleAddExercise(name: string) {
+		const uid = auth.user?.uid;
+		if (!uid) return;
+		// Optimistic: show it straight away. Not awaited — the promise only
+		// settles on server ack, which never comes while offline.
+		customExercises = [...customExercises, name];
+		addExercise(uid, name).catch((error) => {
+			saveError = error instanceof Error ? error.message : String(error);
+		});
+	}
+
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		const uid = auth.user?.uid;
@@ -94,8 +152,8 @@
 	}
 
 	function formatDate(date: Date | null): string {
-		if (!date) return 'syncing…';
-		return new Intl.DateTimeFormat(undefined, {
+		if (!date) return t.syncing;
+		return new Intl.DateTimeFormat(i18n.locale, {
 			dateStyle: 'medium',
 			timeStyle: 'short'
 		}).format(date);
@@ -103,16 +161,19 @@
 </script>
 
 <svelte:head>
-	<title>Gym Tracker</title>
-	<meta name="description" content="A simple offline-capable workout log." />
+	<title>{t.appTitle}</title>
+	<meta name="description" content={t.appDescription} />
 </svelte:head>
 
 <main>
 	<header>
-		<h1>Gym Tracker</h1>
+		<h1>{t.appTitle}</h1>
 		{#if !online}
-			<span class="badge badge--offline">Offline — changes sync when you reconnect</span>
+			<span class="badge badge--offline">{t.offline}</span>
 		{/if}
+		<div class="locale">
+			<LocaleSwitcher />
+		</div>
 	</header>
 
 	{#if !isConfigured}
@@ -125,35 +186,37 @@
 		</div>
 	{:else if auth.error}
 		<div class="notice notice--error">
-			<strong>Auth failed.</strong>
+			<strong>{t.authFailed}</strong>
 			<p>{auth.error}</p>
-			<p class="hint">
-				If this says the sign-in method is disabled, enable <em>Anonymous</em> under Firebase Console
-				→ Authentication → Sign-in method.
-			</p>
+			<p class="hint">{t.authHint}</p>
 		</div>
 	{:else if auth.loading}
-		<p class="muted">Signing in…</p>
+		<p class="muted">{t.signingIn}</p>
 	{:else}
 		<section class="card">
-			<h2>Log a set</h2>
+			<h2>{t.logSet}</h2>
 			<form onsubmit={handleSubmit}>
-				<label>
-					<span>Exercise</span>
-					<input bind:value={exercise} placeholder="Back squat" autocomplete="off" required />
-				</label>
+				<div class="field">
+					<label for="exercise">{t.exercise}</label>
+					<ExercisePicker
+						id="exercise"
+						bind:value={exercise}
+						options={exerciseOptions}
+						onAdd={handleAddExercise}
+					/>
+				</div>
 				<div class="row">
 					<label>
-						<span>Weight (kg)</span>
+						<span>{t.weightKg}</span>
 						<input type="number" bind:value={weight} min="0" step="0.5" placeholder="80" required />
 					</label>
 					<label>
-						<span>Reps</span>
+						<span>{t.reps}</span>
 						<input type="number" bind:value={reps} min="1" step="1" placeholder="5" required />
 					</label>
 				</div>
 				<button type="submit" disabled={!canSubmit}>
-					{saving ? 'Saving…' : 'Add set'}
+					{saving ? t.saving : t.addSet}
 				</button>
 			</form>
 			{#if saveError}
@@ -162,26 +225,26 @@
 		</section>
 
 		<section class="card">
-			<h2>Recent sets</h2>
+			<h2>{t.recentSets}</h2>
 			{#if listError}
 				<p class="error">{listError}</p>
 			{:else if workouts.length === 0}
-				<p class="muted">Nothing logged yet. Add your first set above.</p>
+				<p class="muted">{t.noSets}</p>
 			{:else}
 				<ul class="workouts">
 					{#each workouts as workout (workout.id)}
 						<li>
 							<div>
-								<span class="exercise">{workout.exercise}</span>
+								<span class="exercise">{exerciseLabel(workout.exercise, i18n.locale)}</span>
 								<span class="detail">{workout.weight} kg × {workout.reps}</span>
 								<time>{formatDate(workout.createdAt)}</time>
 							</div>
 							<button
 								class="delete"
 								onclick={() => handleDelete(workout.id)}
-								aria-label="Delete {workout.exercise} set"
+								aria-label={t.deleteSet(exerciseLabel(workout.exercise, i18n.locale))}
 							>
-								Delete
+								{t.delete}
 							</button>
 						</li>
 					{/each}
@@ -190,7 +253,7 @@
 		</section>
 
 		<footer>
-			<span class="muted">Signed in anonymously as <code>{auth.user?.uid.slice(0, 8)}…</code></span>
+			<span class="muted">{t.signedInAs} <code>{auth.user?.uid.slice(0, 8)}…</code></span>
 		</footer>
 	{/if}
 </main>
@@ -252,6 +315,14 @@
 
 	.row label {
 		flex: 1;
+	}
+
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-size: 0.85rem;
+		color: #9aa3ad;
 	}
 
 	label {
@@ -336,6 +407,12 @@
 		padding: 0.35rem 0.6rem;
 		font-size: 0.8rem;
 		font-weight: 500;
+	}
+
+	.locale {
+		margin-left: auto;
+		/* The header aligns on text baseline; the flags have none. */
+		align-self: center;
 	}
 
 	.badge {

@@ -130,6 +130,17 @@ Anonymous auth gives every visitor a stable uid with no signup friction, which i
 makes the ownership rules meaningful from day one. To upgrade to a real provider later,
 use `linkWithCredential` — it preserves the uid, so existing documents carry over.
 
+### Translations
+
+`src/lib/i18n.svelte.ts` holds the English and German UI strings and the reactive
+`i18n.locale` (saved to localStorage, defaulting to the browser language). `de` is typed
+against `en`, so a missing German string fails `npm run check`. Add new UI text to both.
+
+Built-in exercise names are translated via `DEFAULT_EXERCISES` / `exerciseLabel()` in
+`src/lib/firebase/exercises.ts`. The **English name is what gets stored** in workout
+documents; translation is display-only, so switching language never forks history.
+User-added exercise names are stored and shown exactly as typed.
+
 ## Notes
 
 - `.firebaserc` is intentionally absent. Run `firebase use --add` to create it.

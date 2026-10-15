@@ -38,6 +38,28 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // Custom exercises a user has added to their picker. The built-in list
+    // lives in src/lib/firebase/exercises.ts and is never stored here.
+    match /users/{userId}/exercises/{exerciseId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isValidExercise() {
+        let data = request.resource.data;
+        return data.keys().hasOnly(['name', 'createdAt'])
+          && data.keys().hasAll(['name', 'createdAt'])
+          && data.name is string
+          && data.name.size() > 0
+          && data.name.size() <= 100
+          && data.createdAt == request.time;
+      }
+
+      allow read, delete: if isOwner();
+      allow create: if isOwner() && isValidExercise();
+      allow update: if false;
+    }
+
     // Explicit catch-all. Redundant given the default, but it documents intent
     // and stops a stray nested `match` from widening access by accident.
     match /{document=**} {
