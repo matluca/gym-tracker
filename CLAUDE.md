@@ -112,12 +112,27 @@ field means editing both — `hasOnly` / `hasAll` will reject any write with an 
 key. Specific couplings to know:
 
 - `createdAt == request.time` means writes **must** use `serverTimestamp()`.
+- `performedAt` (when the set was done, chosen in the form so sets can be backdated) is
+  client-set and optional; the rule caps it at now + 1 day. Read code uses
+  `Workout.date`, which falls back to `createdAt` for older docs without it. Display and
+  grouping go by `date`; `createdAt` is only the audit trail.
 - `reps is int` — a fractional number is rejected.
 - `allow update: if false`. Nothing edits documents today. If you add editing, write the
   rule deliberately and pin `createdAt` so a client cannot rewrite history.
 
 Rules only take effect once deployed (`npm run deploy:rules`). Editing the file alone
 changes nothing in the live project.
+
+### Routes
+
+- `/` — log a set, recent sets. Exercise names link to their history page.
+- `/exercise/[name]` — progression for one exercise: stat tiles, a chart (est. 1RM / top
+  weight / volume per day) and every set grouped by day. `[name]` is the *stored* value
+  (English for built-ins); build links with `exerciseHref()`, never by hand.
+
+`initAuth()` and global body styles live in `+layout.svelte` so a deep link to any route
+signs in and looks right. The chart is hand-rolled SVG (`ProgressChart.svelte`) to keep a
+charting library out of the bundle; the stats maths is in `src/lib/progress.ts`.
 
 ### Reactive auth state
 
@@ -144,9 +159,11 @@ User-added exercise names are stored and shown exactly as typed.
 ## Notes
 
 - `.firebaserc` is intentionally absent. Run `firebase use --add` to create it.
-- `firestore.indexes.json` is empty. The one query in the app (`orderBy('createdAt')` on a
-  single collection) needs no composite index; adding a multi-field query will, and
-  Firestore's error message links to a one-click creation URL.
+- `firestore.indexes.json` is empty. The queries in the app (`orderBy('createdAt')`, and
+  `where('exercise', '==', …)` on the history page) are single-field, so they need no
+  composite index. That's why `subscribeToExerciseHistory` sorts on the client rather
+  than adding `orderBy` — combining the two would need one, and Firestore's error message
+  links to a one-click creation URL.
 - Bundle is ~204 KB gzipped, ~176 KB of which is the Firebase SDK. Svelte and the router
   are ~28 KB. If first paint becomes a concern, `await import()` the Firebase modules after
   the shell renders rather than trying to trim the SDK.

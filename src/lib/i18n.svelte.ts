@@ -37,7 +37,31 @@ const en = {
 	pickerAdd: (name: string) => `Add “${name}”`,
 	pickerEmpty: 'Type to add an exercise',
 	pickerShow: 'Show exercises',
-	pickerHide: 'Hide exercises'
+	pickerHide: 'Hide exercises',
+	date: 'Date',
+	today: 'Today',
+	back: 'Back',
+	viewHistory: (exercise: string) => `View history for ${exercise}`,
+	progress: 'Progress',
+	history: 'History',
+	metricE1rm: 'Est. 1RM',
+	metricWeight: 'Top weight',
+	metricVolume: 'Volume',
+	metricHint: {
+		e1rm: 'Estimated one-rep max per day (Epley formula). Most reliable for sets under ~10 reps.',
+		weight: 'Heaviest set per day.',
+		volume: 'Total weight × reps per day.'
+	},
+	bestWeight: 'Heaviest set',
+	bestE1rm: 'Best est. 1RM',
+	totalSets: 'Sets logged',
+	lastSession: 'Last session',
+	noHistory: 'No sets logged for this exercise yet.',
+	oneSession: 'Log another session to see your progression.',
+	personalBest: 'PB',
+	personalBestLong: 'Personal best',
+	setCount: (n: number) => (n === 1 ? '1 set' : `${n} sets`),
+	chartLabel: (exercise: string, metric: string) => `${metric} over time for ${exercise}`
 };
 
 type Messages = typeof en;
@@ -67,7 +91,31 @@ const de: Messages = {
 	pickerAdd: (name: string) => `„${name}“ hinzufügen`,
 	pickerEmpty: 'Tippen, um eine Übung hinzuzufügen',
 	pickerShow: 'Übungen anzeigen',
-	pickerHide: 'Übungen ausblenden'
+	pickerHide: 'Übungen ausblenden',
+	date: 'Datum',
+	today: 'Heute',
+	back: 'Zurück',
+	viewHistory: (exercise: string) => `Verlauf für ${exercise} anzeigen`,
+	progress: 'Fortschritt',
+	history: 'Verlauf',
+	metricE1rm: 'Gesch. 1RM',
+	metricWeight: 'Höchstgewicht',
+	metricVolume: 'Volumen',
+	metricHint: {
+		e1rm: 'Geschätztes Einwiederholungsmaximum pro Tag (Epley-Formel). Am zuverlässigsten bei Sätzen unter ca. 10 Wiederholungen.',
+		weight: 'Schwerster Satz pro Tag.',
+		volume: 'Gesamtgewicht × Wiederholungen pro Tag.'
+	},
+	bestWeight: 'Schwerster Satz',
+	bestE1rm: 'Bestes gesch. 1RM',
+	totalSets: 'Sätze gesamt',
+	lastSession: 'Letztes Training',
+	noHistory: 'Für diese Übung wurden noch keine Sätze eingetragen.',
+	oneSession: 'Trag ein weiteres Training ein, um deinen Fortschritt zu sehen.',
+	personalBest: 'PB',
+	personalBestLong: 'Persönliche Bestleistung',
+	setCount: (n: number) => (n === 1 ? '1 Satz' : `${n} Sätze`),
+	chartLabel: (exercise: string, metric: string) => `${metric} im Zeitverlauf für ${exercise}`
 };
 
 const messages: Record<Locale, Messages> = { en, de };

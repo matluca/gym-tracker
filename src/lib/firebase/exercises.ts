@@ -10,6 +10,8 @@
  */
 import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
+import { resolve } from '$app/paths';
+
 import type { Locale } from '$lib/i18n.svelte';
 
 import { getFirebase } from './client';
@@ -55,6 +57,11 @@ const defaultsByValue = new Map(DEFAULT_EXERCISES.map((e) => [e.en.toLowerCase()
 export function exerciseLabel(value: string, locale: Locale): string {
 	const builtIn = defaultsByValue.get(value.toLowerCase());
 	return builtIn ? builtIn[locale] : value;
+}
+
+/** Link to the history page for a stored exercise value. */
+export function exerciseHref(value: string): string {
+	return resolve('/exercise/[name]', { name: value });
 }
 
 function exercisesCollection(uid: string) {

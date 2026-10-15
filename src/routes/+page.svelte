@@ -3,12 +3,13 @@
 
 	import ExercisePicker, { type PickerOption } from '$lib/components/ExercisePicker.svelte';
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
-	import { auth, initAuth } from '$lib/firebase/auth.svelte';
+	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import {
 		addExercise,
 		DEFAULT_EXERCISES,
 		exerciseLabel,
+		exerciseHref,
 		subscribeToExercises
 	} from '$lib/firebase/exercises';
 	import {
@@ -17,14 +18,10 @@
 		subscribeToWorkouts,
 		type Workout
 	} from '$lib/firebase/workouts';
+	import { atCurrentTime, toLocalDateString } from '$lib/dates';
 	import { i18n } from '$lib/i18n.svelte';
 
 	const t = $derived(i18n.t);
-
-	// Keep <html lang> in step so screen readers and hyphenation use the right language.
-	$effect(() => {
-		document.documentElement.lang = i18n.locale;
-	});
 
 	let workouts = $state<Workout[]>([]);
 	let customExercises = $state<string[]>([]);
@@ -36,6 +33,12 @@
 	let exercise = $state('');
 	let weight = $state<number | null>(null);
 	let reps = $state<number | null>(null);
+	// Kept after saving, so several sets can be backdated in a row.
+	let date = $state(toLocalDateString(new Date()));
+
+	// Recomputed on focus so a tab left open overnight doesn't cap at yesterday.
+	let today = $state(toLocalDateString(new Date()));
+	const isToday = $derived(date === today);
 
 	// Built-ins + the user's own, de-duplicated case-insensitively. Exercises
 	// that only appear in logged sets are included too, so history from before
@@ -60,13 +63,21 @@
 		exercise.trim().length > 0 &&
 			weight !== null &&
 			weight > 0 &&
+			date !== '' &&
+			date <= today &&
 			reps !== null &&
 			reps > 0 &&
 			!saving
 	);
 
 	onMount(() => {
-		if (isConfigured) initAuth();
+		const refreshToday = () => {
+			const next = toLocalDateString(new Date());
+			// Roll the selection forward too if it was on "today".
+			if (date === today) date = next;
+			today = next;
+		};
+		window.addEventListener('focus', refreshToday);
 
 		online = navigator.onLine;
 		const goOnline = () => (online = true);
@@ -77,6 +88,7 @@
 		return () => {
 			window.removeEventListener('online', goOnline);
 			window.removeEventListener('offline', goOffline);
+			window.removeEventListener('focus', refreshToday);
 		};
 	});
 
@@ -129,7 +141,8 @@
 			await addWorkout(uid, {
 				exercise: exercise.trim(),
 				weight: weight as number,
-				reps: reps as number
+				reps: reps as number,
+				performedAt: atCurrentTime(date)
 			});
 			exercise = '';
 			weight = null;
@@ -205,6 +218,17 @@
 						onAdd={handleAddExercise}
 					/>
 				</div>
+				<div class="field">
+					<div class="label-row">
+						<label for="date">{t.date}</label>
+						{#if !isToday}
+							<button type="button" class="link" onclick={() => (date = today)}>
+								{t.today}
+							</button>
+						{/if}
+					</div>
+					<input id="date" type="date" bind:value={date} max={today} required />
+				</div>
 				<div class="row">
 					<label>
 						<span>{t.weightKg}</span>
@@ -235,9 +259,15 @@
 					{#each workouts as workout (workout.id)}
 						<li>
 							<div>
-								<span class="exercise">{exerciseLabel(workout.exercise, i18n.locale)}</span>
+								<a
+									class="exercise"
+									href={exerciseHref(workout.exercise)}
+									aria-label={t.viewHistory(exerciseLabel(workout.exercise, i18n.locale))}
+								>
+									{exerciseLabel(workout.exercise, i18n.locale)}
+								</a>
 								<span class="detail">{workout.weight} kg × {workout.reps}</span>
-								<time>{formatDate(workout.createdAt)}</time>
+								<time>{formatDate(workout.date)}</time>
 							</div>
 							<button
 								class="delete"
@@ -259,14 +289,6 @@
 </main>
 
 <style>
-	:global(body) {
-		margin: 0;
-		background: #0f1115;
-		color: #e6e8eb;
-		font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-		line-height: 1.5;
-	}
-
 	main {
 		max-width: 34rem;
 		margin: 0 auto;
@@ -323,6 +345,26 @@
 		gap: 0.25rem;
 		font-size: 0.85rem;
 		color: #9aa3ad;
+	}
+
+	.label-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+
+	button.link {
+		background: none;
+		border: none;
+		padding: 0;
+		color: #4c8dff;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	/* Native picker icon is dark by default; match the dark theme. */
+	input[type='date'] {
+		color-scheme: dark;
 	}
 
 	label {
@@ -388,6 +430,14 @@
 	.exercise {
 		font-weight: 600;
 		margin-right: 0.5rem;
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: #4a525e;
+		text-underline-offset: 0.2em;
+	}
+
+	.exercise:hover {
+		text-decoration-color: #4c8dff;
 	}
 
 	.detail {

@@ -15,7 +15,7 @@ service cloud.firestore {
       // compromised client can't stuff arbitrary payloads into the collection.
       function isValidWorkout() {
         let data = request.resource.data;
-        return data.keys().hasOnly(['exercise', 'weight', 'reps', 'createdAt'])
+        return data.keys().hasOnly(['exercise', 'weight', 'reps', 'performedAt', 'createdAt'])
           && data.keys().hasAll(['exercise', 'weight', 'reps', 'createdAt'])
           && data.exercise is string
           && data.exercise.size() > 0
@@ -26,7 +26,18 @@ service cloud.firestore {
           && data.reps is int
           && data.reps > 0
           && data.reps <= 1000
-          && data.createdAt == request.time;
+          && data.createdAt == request.time
+          && isValidPerformedAt(data);
+      }
+
+      // `performedAt` is client-chosen so sets can be backdated. Optional, so
+      // writes queued offline by an older build still go through. Up to a day
+      // in the future is allowed for client clock skew; nothing absurdly old.
+      function isValidPerformedAt(data) {
+        return !('performedAt' in data)
+          || (data.performedAt is timestamp
+            && data.performedAt <= request.time + duration.value(1, 'd')
+            && data.performedAt >= timestamp.date(2000, 1, 1));
       }
 
       allow read, delete: if isOwner();
