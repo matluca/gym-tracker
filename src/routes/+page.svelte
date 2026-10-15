@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import ExercisePicker, { type PickerOption } from '$lib/components/ExercisePicker.svelte';
+	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import {
 		addExercise,
-		DEFAULT_EXERCISES,
+		buildExerciseOptions,
 		exerciseLabel,
 		exerciseHref,
 		subscribeToExercises
@@ -53,24 +53,13 @@
 		)
 	);
 
-	// Built-ins + the user's own, de-duplicated case-insensitively. Exercises
-	// that only appear in logged sets are included too, so history from before
-	// the picker existed stays selectable.
-	const exerciseOptions = $derived.by((): PickerOption[] => {
-		const byKey = new Map<string, PickerOption>();
-		for (const name of [
-			...DEFAULT_EXERCISES.map((e) => e.en),
-			...customExercises,
-			...workouts.map((w) => w.exercise)
-		]) {
-			const value = name.trim();
-			const key = value.toLowerCase();
-			if (key && !byKey.has(key)) {
-				byKey.set(key, { value, label: exerciseLabel(value, i18n.locale) });
-			}
-		}
-		return [...byKey.values()];
-	});
+	const exerciseOptions = $derived(
+		buildExerciseOptions(
+			customExercises,
+			workouts.map((w) => w.exercise),
+			i18n.locale
+		)
+	);
 
 	const canSubmit = $derived(
 		exercise.trim().length > 0 &&

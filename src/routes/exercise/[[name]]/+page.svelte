@@ -1,14 +1,26 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
+	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import ProgressChart from '$lib/components/ProgressChart.svelte';
 	import { toLocalDateString } from '$lib/dates';
 	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
-	import { exerciseLabel } from '$lib/firebase/exercises';
-	import { subscribeToExerciseHistory, type Workout } from '$lib/firebase/workouts';
+	import {
+		buildExerciseOptions,
+		exerciseHref,
+		exerciseLabel,
+		getLastViewedExercise,
+		setLastViewedExercise,
+		subscribeToExercises
+	} from '$lib/firebase/exercises';
+	import {
+		subscribeToExerciseHistory,
+		subscribeToWorkouts,
+		type Workout
+	} from '$lib/firebase/workouts';
 	import { i18n } from '$lib/i18n.svelte';
 	import {
 		e1rm,
@@ -22,9 +34,53 @@
 	const t = $derived(i18n.t);
 
 	// The stored (English, for built-ins) exercise value — the route param is
-	// already URL-decoded by SvelteKit.
+	// already URL-decoded by SvelteKit. Empty on the bare /exercise tab.
 	const exercise = $derived(page.params.name ?? '');
 	const label = $derived(exerciseLabel(exercise, i18n.locale));
+
+	// Bare tab: reopen the last exercise viewed on this device. `replaceState`
+	// so Back doesn't bounce between /exercise and /exercise/X.
+	$effect(() => {
+		if (exercise) {
+			setLastViewedExercise(exercise);
+			return;
+		}
+		const last = getLastViewedExercise();
+		if (last) goto(exerciseHref(last), { replaceState: true });
+	});
+
+	// Picker options: same sources as the Log tab, so every exercise you've
+	// logged or added is selectable here.
+	let customExercises = $state<string[]>([]);
+	let recent = $state<Workout[]>([]);
+
+	$effect(() => {
+		const uid = auth.user?.uid;
+		if (!uid) return;
+		const stopCustom = subscribeToExercises(uid, (n) => (customExercises = n), () => {});
+		const stopRecent = subscribeToWorkouts(uid, (n) => (recent = n), () => {});
+		return () => {
+			stopCustom();
+			stopRecent();
+		};
+	});
+
+	const options = $derived(
+		buildExerciseOptions(
+			customExercises,
+			[...recent.map((w) => w.exercise), ...(exercise ? [exercise] : [])],
+			i18n.locale
+		)
+	);
+
+	// Bound to the picker; navigating is what actually switches exercise.
+	let picked = $state('');
+	$effect(() => {
+		picked = exercise;
+	});
+	$effect(() => {
+		if (picked && picked !== exercise) goto(exerciseHref(picked), { keepFocus: true });
+	});
 
 	let workouts = $state<Workout[]>([]);
 	let loaded = $state(false);
@@ -88,23 +144,23 @@
 </script>
 
 <svelte:head>
-	<title>{label} · {t.appTitle}</title>
+	<title>{exercise ? `${label} · ` : ''}{t.progress} · {t.appTitle}</title>
 </svelte:head>
 
 <main>
 	<header>
-		<a class="back" href={resolve('/')}>
-			<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
-				<path d="M12.5 15 7.5 10 12.5 5" fill="none" stroke="currentColor" stroke-width="2" />
-			</svg>
-			{t.back}
-		</a>
+		<h1>{t.progress}</h1>
 		<div class="locale">
 			<LocaleSwitcher />
 		</div>
 	</header>
 
-	<h1>{label}</h1>
+	{#if isConfigured && !auth.loading && !auth.error}
+		<div class="pick">
+			<label for="progress-exercise" class="visually-hidden">{t.exercise}</label>
+			<ExercisePicker id="progress-exercise" bind:value={picked} {options} />
+		</div>
+	{/if}
 
 	{#if !isConfigured}
 		<p class="muted">Firebase isn't configured yet. See <code>README.md</code>.</p>
@@ -112,6 +168,10 @@
 		<p class="error">{t.authFailed} {auth.error}</p>
 	{:else if error}
 		<p class="error">{error}</p>
+	{:else if !exercise}
+		<section class="card">
+			<p class="muted">{t.pickExercise}</p>
+		</section>
 	{:else if auth.loading || !loaded}
 		<p class="muted">{auth.loading ? t.signingIn : '…'}</p>
 	{:else if !stats}
@@ -212,26 +272,32 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: 1rem;
-	}
-
-	.back {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		color: #9aa3ad;
-		text-decoration: none;
-		font-size: 0.9rem;
-		padding: 0.25rem 0.4rem 0.25rem 0;
-	}
-
-	.back:hover {
-		color: #e6e8eb;
+		margin-bottom: 1.5rem;
 	}
 
 	h1 {
 		font-size: 1.5rem;
-		margin: 0 0 1rem;
+		margin: 0;
+	}
+
+	.pick {
+		margin-bottom: 1rem;
+	}
+
+	/* Bigger than the Log form's field: here the exercise is the page title. */
+	.pick :global(input) {
+		font-size: 1.15rem;
+		font-weight: 600;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 
 	h2 {

@@ -59,9 +59,47 @@ export function exerciseLabel(value: string, locale: Locale): string {
 	return builtIn ? builtIn[locale] : value;
 }
 
-/** Link to the history page for a stored exercise value. */
+/** Link to the Progress tab for a stored exercise value. */
 export function exerciseHref(value: string): string {
-	return resolve('/exercise/[name]', { name: value });
+	return resolve('/exercise/[[name]]', { name: value });
+}
+
+/**
+ * Everything the exercise picker offers: built-ins, the user's own, and names
+ * that only appear in logged sets (so history from before the picker existed
+ * stays selectable). De-duplicated case-insensitively, first spelling wins.
+ */
+export function buildExerciseOptions(
+	custom: string[],
+	logged: string[],
+	locale: Locale
+): { value: string; label: string }[] {
+	const byKey = new Map<string, { value: string; label: string }>();
+	for (const name of [...DEFAULT_EXERCISES.map((e) => e.en), ...custom, ...logged]) {
+		const value = name.trim();
+		const key = value.toLowerCase();
+		if (key && !byKey.has(key)) byKey.set(key, { value, label: exerciseLabel(value, locale) });
+	}
+	return [...byKey.values()];
+}
+
+const LAST_VIEWED_KEY = 'lastViewedExercise';
+
+/** The exercise last opened in the Progress tab, per device. */
+export function getLastViewedExercise(): string | null {
+	try {
+		return localStorage.getItem(LAST_VIEWED_KEY);
+	} catch {
+		return null;
+	}
+}
+
+export function setLastViewedExercise(value: string): void {
+	try {
+		localStorage.setItem(LAST_VIEWED_KEY, value);
+	} catch {
+		// Not fatal — the tab just opens empty next time.
+	}
 }
 
 function exercisesCollection(uid: string) {

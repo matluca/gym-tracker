@@ -1,6 +1,6 @@
 <script lang="ts">
 	/**
-	 * Bottom navigation between the two top-level screens. Fixed to the bottom
+	 * Bottom navigation between the three top-level screens. Fixed to the bottom
 	 * (thumb reach on phones) and padded for the iOS home indicator via
 	 * `env(safe-area-inset-bottom)` — app.html sets `viewport-fit=cover`.
 	 */
@@ -10,23 +10,32 @@
 	import { i18n } from '$lib/i18n.svelte';
 
 	const path = $derived(page.url.pathname);
-	// An exercise page is reached from either tab; count it as History.
-	const onHistory = $derived(path.startsWith('/history') || path.startsWith('/exercise/'));
+	const current = $derived(
+		path.startsWith('/history') ? 'history' : path.startsWith('/exercise') ? 'progress' : 'log'
+	);
 </script>
 
 <nav aria-label={i18n.t.appTitle}>
-	<a href={resolve('/')} aria-current={!onHistory ? 'page' : undefined}>
+	<a href={resolve('/')} aria-current={current === 'log' ? 'page' : undefined}>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<path d="M12 5v14M5 12h14" />
 		</svg>
 		<span>{i18n.t.tabLog}</span>
 	</a>
-	<a href={resolve('/history')} aria-current={onHistory ? 'page' : undefined}>
+	<a href={resolve('/history')} aria-current={current === 'history' ? 'page' : undefined}>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<rect x="4" y="5" width="16" height="15" rx="2" />
 			<path d="M4 10h16M9 3v4M15 3v4" />
 		</svg>
 		<span>{i18n.t.history}</span>
+	</a>
+	<!-- Bare /exercise reopens the last exercise viewed on this device. -->
+	<a href={resolve('/exercise/[[name]]', {})} aria-current={current === 'progress' ? 'page' : undefined}>
+		<svg viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M4 19h16M5 15l4-4 3 3 7-7" />
+			<path d="M15 7h4v4" />
+		</svg>
+		<span>{i18n.t.progress}</span>
 	</a>
 </nav>
 

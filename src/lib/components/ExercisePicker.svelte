@@ -9,6 +9,7 @@
 	 * nothing valid is selected. Typing matches against both, so "squat" finds
 	 * "Kniebeuge" in German. When the typed text matches nothing, an extra
 	 * "Add …" option calls `onAdd`; the parent is expected to add it to `options`.
+	 * Without `onAdd` the picker is select-only: no "Add …" option.
 	 */
 	import { i18n } from '$lib/i18n.svelte';
 
@@ -22,7 +23,7 @@
 	}: {
 		value?: string;
 		options: PickerOption[];
-		onAdd: (name: string) => void;
+		onAdd?: (name: string) => void;
 		id?: string;
 	} = $props();
 
@@ -87,7 +88,7 @@
 			: [...options].sort((a, b) => collator.compare(a.label, b.label));
 
 		const list: Item[] = matches.map((option) => ({ kind: 'option', option }));
-		if (filtering && query && !exactMatch) list.push({ kind: 'add', name: query });
+		if (onAdd && filtering && query && !exactMatch) list.push({ kind: 'add', name: query });
 		return list;
 	});
 
@@ -106,7 +107,7 @@
 
 	function choose(item: Item) {
 		if (item.kind === 'add') {
-			onAdd(item.name);
+			onAdd?.(item.name);
 			setValue(item.name);
 			text = item.name;
 		} else {
@@ -266,7 +267,9 @@
 					{/if}
 				</li>
 			{:else}
-				<li class="empty" role="presentation">{i18n.t.pickerEmpty}</li>
+				<li class="empty" role="presentation">
+					{onAdd ? i18n.t.pickerEmpty : i18n.t.pickerNoMatch}
+				</li>
 			{/each}
 		</ul>
 	{/if}

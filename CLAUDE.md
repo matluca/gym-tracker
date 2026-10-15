@@ -131,11 +131,13 @@ changes nothing in the live project.
   set; tap a day to expand every set. Pages by `createdAt` (200 sets per "Load older") and
   hides the oldest, possibly-incomplete days — see `subscribeToHistory` for why the
   `performedAt` ≤ `createdAt` + 1 day rule cap makes that bound safe.
-- `/exercise/[name]` — progression for one exercise: stat tiles, a chart (est. 1RM / top
-  weight / volume per day) and every set grouped by day. `[name]` is the *stored* value
-  (English for built-ins); build links with `exerciseHref()`, never by hand.
+- `/exercise/[[name]]` — the Progress tab: an exercise picker, then stat tiles, a chart
+  (est. 1RM / top weight / volume per day) and every set grouped by day. `[name]` is the
+  *stored* value (English for built-ins) and is optional: bare `/exercise` redirects to the
+  last exercise viewed on this device (localStorage), or shows an empty state. Build links
+  with `exerciseHref()`, never by hand — every exercise name in the app links here.
 
-`initAuth()`, global body styles and the bottom `TabBar` (Log / History) live in
+`initAuth()`, global body styles and the bottom `TabBar` (Log / History / Progress) live in
 `+layout.svelte` so a deep link to any route
 signs in and looks right. The chart is hand-rolled SVG (`ProgressChart.svelte`) to keep a
 charting library out of the bundle; the stats maths is in `src/lib/progress.ts`.
