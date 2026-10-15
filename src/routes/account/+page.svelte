@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import {
 		auth,
@@ -227,6 +229,12 @@
 					</label>
 				{/if}
 
+				{#if mode === 'create'}
+					<p class="fine">
+						{t.privacySignupNote} <a href={resolve('/privacy')}>{t.privacyLink}</a>
+					</p>
+				{/if}
+
 				<button type="submit" disabled={!canSubmit}>
 					{busy
 						? t.working
@@ -255,6 +263,17 @@
 				</button>
 			{/if}
 		</section>
+	{/if}
+
+	{#if isConfigured && auth.user}
+		<footer>
+			<div class="id">
+				<span class="label">{t.yourId}</span>
+				<code>{auth.user.uid}</code>
+				<span class="hint">{t.yourIdHint}</span>
+			</div>
+			<a href={resolve('/privacy')}>{t.privacyLink}</a>
+		</footer>
 	{/if}
 </main>
 
@@ -459,6 +478,41 @@
 
 	.locale {
 		align-self: center;
+	}
+
+	.fine {
+		margin: 0;
+		font-size: 0.8rem;
+		color: #78818c;
+	}
+
+	a {
+		color: #4c8dff;
+	}
+
+	footer {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+		font-size: 0.85rem;
+	}
+
+	.id {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.id code {
+		align-self: flex-start;
+		max-width: 100%;
+		overflow-wrap: anywhere;
+		user-select: all;
+	}
+
+	.id .hint {
+		margin: 0;
 	}
 
 	code {

@@ -81,6 +81,11 @@ const en = {
 			'Email sign-in isn’t enabled. In the Firebase Console, enable Email/Password under Authentication → Sign-in method.'
 	} as Record<string, string>,
 	authErrorGeneric: 'Something went wrong. Please try again.',
+	privacyTitle: 'Privacy notice',
+	privacyLink: 'Privacy notice',
+	privacySignupNote: 'How we handle your data:',
+	yourId: 'Your ID',
+	yourIdHint: 'Quote this if you contact us about your data.',
 	pickExercise: 'Pick an exercise above to see its progression.',
 	historyTitle: 'Training history',
 	exerciseCount: (n: number) => (n === 1 ? '1 exercise' : `${n} exercises`),
@@ -189,6 +194,11 @@ const de: Messages = {
 			'Die Anmeldung per E-Mail ist nicht aktiviert. Aktiviere in der Firebase Console unter Authentication → Sign-in method „Email/Password“.'
 	} as Record<string, string>,
 	authErrorGeneric: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+	privacyTitle: 'Datenschutzerklärung',
+	privacyLink: 'Datenschutz',
+	privacySignupNote: 'So gehen wir mit deinen Daten um:',
+	yourId: 'Deine Kennung',
+	yourIdHint: 'Gib sie an, wenn du uns wegen deiner Daten kontaktierst.',
 	pickExercise: 'Wähle oben eine Übung aus, um deinen Fortschritt zu sehen.',
 	historyTitle: 'Trainingsverlauf',
 	exerciseCount: (n: number) => (n === 1 ? '1 Übung' : `${n} Übungen`),

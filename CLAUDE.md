@@ -173,6 +173,14 @@ aren't reactive. Map new Firebase error codes in `authErrors` in `i18n.svelte.ts
 Email/Password must be enabled in the Firebase Console (Authentication → Sign-in method),
 or every attempt fails with `operation-not-allowed`.
 
+### Privacy notice
+
+`/privacy` is the GDPR notice (Datenschutzerklärung), German authoritative with an English
+translation, linked from the Account tab. The text is written inline in
+`src/routes/privacy/+page.svelte`, not in `i18n.svelte.ts`. **When the app starts
+collecting or sending anything new** (analytics, another Firebase product, a new stored
+field), update both language versions and `LAST_UPDATED` in that file.
+
 ### Translations
 
 `src/lib/i18n.svelte.ts` holds the English and German UI strings and the reactive
