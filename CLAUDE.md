@@ -31,7 +31,7 @@ emulator is the highest-value place to start — the rules carry real logic.
 ## Architecture
 
 A SvelteKit 2 / Svelte 5 app compiled to a static SPA, served by Firebase Hosting, with
-Firestore for data and anonymous Firebase Auth for identity. There is no server of ours at
+Firestore for data and Firebase Auth (anonymous, upgradable to email + password) for identity. There is no server of ours at
 runtime. See `README.md` for first-time Firebase project setup.
 
 ### Config lives in `vite.config.ts`, not `svelte.config.js`
@@ -142,7 +142,7 @@ changes nothing in the live project.
   last exercise viewed on this device (localStorage), or shows an empty state. Build links
   with `exerciseHref()`, never by hand — every exercise name in the app links here.
 
-`initAuth()`, global body styles and the bottom `TabBar` (Log / History / Progress) live in
+`initAuth()`, global body styles and the bottom `TabBar` (Log / History / Progress / Account) live in
 `+layout.svelte` so a deep link to any route
 signs in and looks right. The chart is hand-rolled SVG (`ProgressChart.svelte`) to keep a
 charting library out of the bundle; the stats maths is in `src/lib/progress.ts`.
@@ -154,9 +154,24 @@ charting library out of the bundle; the stats maths is in `src/lib/progress.ts`.
 processes rune syntax in `.svelte` and `.svelte.ts` files, so renaming it breaks the
 module. `initAuth()` is idempotent and signs in anonymously when no user is present.
 
-Anonymous auth gives every visitor a stable uid with no signup friction, which is what
-makes the ownership rules meaningful from day one. To upgrade to a real provider later,
-use `linkWithCredential` — it preserves the uid, so existing documents carry over.
+Every visitor starts anonymous, which gives a stable uid with no signup friction. The
+Account tab (`/account`) upgrades it:
+
+- **Create account** → `linkWithCredential` on the anonymous user. Same uid, so nothing
+  moves. Then a verification email is sent (unverified accounts still work).
+- **Sign in** to an existing account switches uid. `signIn` first snapshots the anonymous
+  user's data (`migrate.ts`) — it must, because afterwards the rules deny reading it — then
+  replays it under the new uid. The copies get a fresh `createdAt` and keep the training
+  date in `performedAt`. The anonymous originals are orphaned, not deleted.
+- **Sign out** → `onAuthStateChanged` sees no user and signs in anonymously again, so the
+  app always has a uid.
+
+Read `auth.isAnonymous` / `auth.email` / `auth.emailVerified`, not `auth.user.*`: the
+`User` is a class instance mutated in place by linking and `reload()`, so its fields
+aren't reactive. Map new Firebase error codes in `authErrors` in `i18n.svelte.ts`.
+
+Email/Password must be enabled in the Firebase Console (Authentication → Sign-in method),
+or every attempt fails with `operation-not-allowed`.
 
 ### Translations
 

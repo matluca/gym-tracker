@@ -307,9 +307,6 @@
 			{/if}
 		</section>
 
-		<footer>
-			<span class="muted">{t.signedInAs} <code>{auth.user?.uid.slice(0, 8)}…</code></span>
-		</footer>
 	{/if}
 </main>
 
@@ -566,8 +563,4 @@
 		font-size: 0.85em;
 	}
 
-	footer {
-		margin-top: 1.5rem;
-		text-align: center;
-	}
 </style>

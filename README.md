@@ -11,7 +11,7 @@ Firebase Hosting, with Firestore for data and Firebase Auth for identity.
 | Build         | `@sveltejs/adapter-static` → SPA, no server at runtime       |
 | Hosting       | Firebase Hosting (static + catch-all rewrite)                |
 | Data          | Cloud Firestore, with the IndexedDB offline cache enabled    |
-| Auth          | Firebase Anonymous Auth                                      |
+| Auth          | Firebase Auth — anonymous by default, email + password opt-in |
 | Offline shell | Hand-rolled service worker via SvelteKit's `$service-worker` |
 
 ## Setup
@@ -23,7 +23,8 @@ In the [Firebase Console](https://console.firebase.google.com):
 1. Create a project (or reuse one).
 2. **Build → Firestore Database → Create database.** Pick a region close to you. Start in
    **production mode** — the rules in `firestore.rules` replace the defaults on first deploy.
-3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.**
+3. **Build → Authentication → Get started → Sign-in method.** Enable **Anonymous** and
+   **Email/Password** (leave "Email link" off).
 4. **Project settings → General → Your apps → Add app → Web.** Register it, then copy the
    `firebaseConfig` values from the "SDK setup and configuration" panel.
 
@@ -95,7 +96,8 @@ src/
     +page.svelte               the whole app today
   lib/firebase/
     client.ts                  lazy singletons; offline cache; emulator wiring
-    auth.svelte.ts             rune-backed auth state, anonymous sign-in
+    auth.svelte.ts             rune-backed auth state; anonymous + email/password
+    migrate.ts                 copy anonymous data into an account on sign-in
     workouts.ts                Firestore reads/writes for users/{uid}/workouts
 static/
   manifest.webmanifest
@@ -132,8 +134,6 @@ renders so the app paints before the SDK lands.
 
 ## Next steps
 
-- Swap anonymous auth for a real provider with `linkWithCredential` — the uid is
-  preserved, so existing workouts carry over.
 - Add routes (history, per-exercise charts). New files under `src/routes/` need no
   config changes.
 - Add an install prompt by capturing `beforeinstallprompt`.

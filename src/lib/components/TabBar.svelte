@@ -1,18 +1,27 @@
 <script lang="ts">
 	/**
-	 * Bottom navigation between the three top-level screens. Fixed to the bottom
+	 * Bottom navigation between the top-level screens. Fixed to the bottom
 	 * (thumb reach on phones) and padded for the iOS home indicator via
 	 * `env(safe-area-inset-bottom)` — app.html sets `viewport-fit=cover`.
 	 */
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
+	import { auth } from '$lib/firebase/auth.svelte';
 	import { i18n } from '$lib/i18n.svelte';
 
 	const path = $derived(page.url.pathname);
 	const current = $derived(
-		path.startsWith('/history') ? 'history' : path.startsWith('/exercise') ? 'progress' : 'log'
+		path.startsWith('/history')
+			? 'history'
+			: path.startsWith('/exercise')
+				? 'progress'
+				: path.startsWith('/account')
+					? 'account'
+					: 'log'
 	);
+	// Nudge guests towards saving their data, once auth has settled.
+	const unsaved = $derived(!auth.loading && auth.isAnonymous);
 </script>
 
 <nav aria-label={i18n.t.appTitle}>
@@ -36,6 +45,25 @@
 			<path d="M15 7h4v4" />
 		</svg>
 		<span>{i18n.t.progress}</span>
+	</a>
+	<a
+		href={resolve('/account')}
+		aria-current={current === 'account' ? 'page' : undefined}
+		title={unsaved ? i18n.t.guestBadge : undefined}
+	>
+		<span class="icon">
+			<svg viewBox="0 0 24 24" aria-hidden="true">
+				<circle cx="12" cy="8" r="4" />
+				<path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+			</svg>
+			{#if unsaved}
+				<span class="dot" aria-hidden="true"></span>
+			{/if}
+		</span>
+		<span>{i18n.t.account}</span>
+		{#if unsaved}
+			<span class="visually-hidden">({i18n.t.guestBadge})</span>
+		{/if}
 	</a>
 </nav>
 
@@ -81,6 +109,32 @@
 	a:focus-visible {
 		outline: 2px solid #4c8dff;
 		outline-offset: -2px;
+	}
+
+	.icon {
+		position: relative;
+		display: grid;
+	}
+
+	.dot {
+		position: absolute;
+		top: 0;
+		right: -0.15rem;
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: #f5c451;
+		box-shadow: 0 0 0 2px #0f1115;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 
 	svg {

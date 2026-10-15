@@ -5,7 +5,7 @@
 	import { onMount } from 'svelte';
 
 	import TabBar from '$lib/components/TabBar.svelte';
-	import { initAuth } from '$lib/firebase/auth.svelte';
+	import { initAuth, setAuthLanguage } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import { i18n } from '$lib/i18n.svelte';
 
@@ -20,6 +20,11 @@
 	// Keep <html lang> in step so screen readers and hyphenation use the right language.
 	$effect(() => {
 		document.documentElement.lang = i18n.locale;
+	});
+
+	// Verification and password-reset emails go out in the UI language.
+	$effect(() => {
+		if (isConfigured) setAuthLanguage(i18n.locale);
 	});
 </script>
 
