@@ -34,6 +34,9 @@
 
 	let text = $state(labelFor(value));
 	let open = $state(false);
+	// True only after the user types. Opening the list with something already
+	// selected shows every exercise, not just the one matching the current text.
+	let filtering = $state(false);
 	let activeIndex = $state(-1);
 	let listEl = $state<HTMLUListElement>();
 	let inputEl = $state<HTMLInputElement>();
@@ -67,7 +70,7 @@
 	});
 
 	const items = $derived.by((): Item[] => {
-		const q = query.toLowerCase();
+		const q = filtering ? query.toLowerCase() : '';
 		const collator = new Intl.Collator(i18n.locale);
 		const rank = (o: PickerOption) => {
 			const label = o.label.toLowerCase();
@@ -84,7 +87,7 @@
 			: [...options].sort((a, b) => collator.compare(a.label, b.label));
 
 		const list: Item[] = matches.map((option) => ({ kind: 'option', option }));
-		if (query && !exactMatch) list.push({ kind: 'add', name: query });
+		if (filtering && query && !exactMatch) list.push({ kind: 'add', name: query });
 		return list;
 	});
 
@@ -111,13 +114,30 @@
 			text = item.option.label;
 		}
 		open = false;
+		filtering = false;
 		activeIndex = -1;
 	}
 
 	function openList() {
+		if (open) return;
 		open = true;
+		filtering = false;
 		const current = items.findIndex((i) => i.kind === 'option' && i.option.value === value);
 		activeIndex = current;
+		if (current >= 0) {
+			// Show the current pick in the list rather than the top of the alphabet.
+			requestAnimationFrame(() =>
+				listEl
+					?.querySelector(`#${CSS.escape(optionId(current))}`)
+					?.scrollIntoView({ block: 'nearest' })
+			);
+		}
+	}
+
+	function handleFocus() {
+		openList();
+		// Select the prefilled name so typing replaces it instead of appending.
+		if (value) inputEl?.select();
 	}
 
 	function moveActive(delta: number) {
@@ -135,6 +155,7 @@
 	function handleInput() {
 		syncValueFromText();
 		open = true;
+		filtering = true;
 		// Keep the top result highlighted so Enter picks it.
 		activeIndex = items.length > 0 ? 0 : -1;
 	}
@@ -198,7 +219,7 @@
 			aria-invalid={query.length > 0 && !value}
 			oninput={handleInput}
 			onkeydown={handleKeydown}
-			onfocus={openList}
+			onfocus={handleFocus}
 			onclick={openList}
 			onblur={handleBlur}
 		/>

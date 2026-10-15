@@ -31,6 +31,9 @@
 	let online = $state(true);
 
 	let exercise = $state('');
+	// Set once the field has been prefilled (or the user has picked something),
+	// so later snapshots never overwrite their choice.
+	let exerciseTouched = false;
 	let weight = $state<number | null>(null);
 	let reps = $state<number | null>(null);
 	// Kept after saving, so several sets can be backdated in a row.
@@ -119,6 +122,12 @@
 			(next) => {
 				workouts = next;
 				listError = null;
+				// Wait for a non-empty snapshot: the first one can come from an empty
+				// local cache before server data arrives.
+				if (!exerciseTouched && next.length > 0) {
+					if (exercise === '') exercise = lastEntered(next)?.exercise ?? '';
+					exerciseTouched = true;
+				}
 			},
 			(error) => (listError = error.message)
 		);
@@ -160,7 +169,7 @@
 				reps: reps as number,
 				performedAt: atCurrentTime(date)
 			});
-			exercise = '';
+			// Exercise stays selected for the next set; only the numbers reset.
 			weight = null;
 			reps = null;
 		} catch (error) {
@@ -178,6 +187,19 @@
 		} catch (error) {
 			saveError = error instanceof Error ? error.message : String(error);
 		}
+	}
+
+	/**
+	 * The set entered most recently — by `createdAt`, not the training date, so
+	 * backdating an old session doesn't change what's preselected. A set still
+	 * waiting for its server timestamp is the newest.
+	 */
+	function lastEntered(list: Workout[]): Workout | undefined {
+		const entered = (w: Workout) => w.createdAt?.getTime() ?? Infinity;
+		return list.reduce<Workout | undefined>(
+			(best, w) => (!best || entered(w) > entered(best) ? w : best),
+			undefined
+		);
 	}
 
 	function formatTime(date: Date | null): string {
