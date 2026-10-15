@@ -40,6 +40,22 @@
 	let today = $state(toLocalDateString(new Date()));
 	const isToday = $derived(date === today);
 
+	// Today's sets grouped by exercise, in the order you trained them. Filtered
+	// from the recent-sets subscription (50 most recently entered), which covers
+	// a day's training without a second listener.
+	const todaysGroups = $derived.by(() => {
+		const groups = new Map<string, Workout[]>();
+		const sets = workouts
+			.filter((w) => toLocalDateString(w.date ?? new Date()) === today)
+			.reverse(); // subscription is newest first
+		for (const w of sets) {
+			const list = groups.get(w.exercise);
+			if (list) list.push(w);
+			else groups.set(w.exercise, [w]);
+		}
+		return [...groups.entries()].map(([exercise, sets]) => ({ exercise, sets }));
+	});
+
 	// Built-ins + the user's own, de-duplicated case-insensitively. Exercises
 	// that only appear in logged sets are included too, so history from before
 	// the picker existed stays selectable.
@@ -164,12 +180,9 @@
 		}
 	}
 
-	function formatDate(date: Date | null): string {
+	function formatTime(date: Date | null): string {
 		if (!date) return t.syncing;
-		return new Intl.DateTimeFormat(i18n.locale, {
-			dateStyle: 'medium',
-			timeStyle: 'short'
-		}).format(date);
+		return new Intl.DateTimeFormat(i18n.locale, { timeStyle: 'short' }).format(date);
 	}
 </script>
 
@@ -249,36 +262,43 @@
 		</section>
 
 		<section class="card">
-			<h2>{t.recentSets}</h2>
+			<h2>{t.todaysSets}</h2>
 			{#if listError}
 				<p class="error">{listError}</p>
-			{:else if workouts.length === 0}
-				<p class="muted">{t.noSets}</p>
+			{:else if todaysGroups.length === 0}
+				<p class="muted">{t.noSetsToday}</p>
 			{:else}
-				<ul class="workouts">
-					{#each workouts as workout (workout.id)}
-						<li>
-							<div>
-								<a
-									class="exercise"
-									href={exerciseHref(workout.exercise)}
-									aria-label={t.viewHistory(exerciseLabel(workout.exercise, i18n.locale))}
-								>
-									{exerciseLabel(workout.exercise, i18n.locale)}
+				<div class="groups">
+					{#each todaysGroups as group (group.exercise)}
+						{@const name = exerciseLabel(group.exercise, i18n.locale)}
+						<div class="group">
+							<div class="group-head">
+								<a class="exercise" href={exerciseHref(group.exercise)} aria-label={t.viewHistory(name)}>
+									{name}
 								</a>
-								<span class="detail">{workout.weight} kg × {workout.reps}</span>
-								<time>{formatDate(workout.date)}</time>
+								<span class="muted">{t.setCount(group.sets.length)}</span>
 							</div>
-							<button
-								class="delete"
-								onclick={() => handleDelete(workout.id)}
-								aria-label={t.deleteSet(exerciseLabel(workout.exercise, i18n.locale))}
-							>
-								{t.delete}
-							</button>
-						</li>
+							<ul class="workouts">
+								{#each group.sets as workout (workout.id)}
+									<li>
+										<span class="detail">{workout.weight} kg × {workout.reps}</span>
+										<time>{formatTime(workout.date)}</time>
+										<button
+											class="delete"
+											onclick={() => handleDelete(workout.id)}
+											aria-label={t.deleteSet(name)}
+										>
+											{t.delete}
+										</button>
+									</li>
+								{/each}
+							</ul>
+						</div>
 					{/each}
-				</ul>
+				</div>
+			{/if}
+			{#if !isToday}
+				<p class="hint-muted">{t.otherDayHint}</p>
 			{/if}
 		</section>
 
@@ -407,21 +427,39 @@
 		cursor: not-allowed;
 	}
 
+	.groups {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.group-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 0.35rem;
+	}
+
+	.hint-muted {
+		color: #78818c;
+		font-size: 0.8rem;
+		margin: 0.75rem 0 0;
+	}
+
 	.workouts {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.25rem;
 	}
 
 	.workouts li {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		gap: 0.75rem;
-		padding: 0.6rem 0.75rem;
+		padding: 0.4rem 0.4rem 0.4rem 0.75rem;
 		background: #0f1115;
 		border: 1px solid #252a33;
 		border-radius: 0.5rem;
@@ -442,10 +480,11 @@
 
 	.detail {
 		color: #c3c9d1;
+		font-variant-numeric: tabular-nums;
 	}
 
 	time {
-		display: block;
+		margin-left: auto;
 		font-size: 0.75rem;
 		color: #78818c;
 	}

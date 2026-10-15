@@ -125,7 +125,8 @@ changes nothing in the live project.
 
 ### Routes
 
-- `/` — log a set, recent sets. Exercise names link to their history page.
+- `/` — log a set, plus today's sets grouped by exercise (filtered client-side from the
+  50-most-recent subscription). Exercise names link to their history page.
 - `/exercise/[name]` — progression for one exercise: stat tiles, a chart (est. 1RM / top
   weight / volume per day) and every set grouped by day. `[name]` is the *stored* value
   (English for built-ins); build links with `exerciseHref()`, never by hand.
