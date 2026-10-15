@@ -4,6 +4,7 @@
 	// install prompt reads.
 	import { onMount } from 'svelte';
 
+	import TabBar from '$lib/components/TabBar.svelte';
 	import { initAuth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import { i18n } from '$lib/i18n.svelte';
@@ -23,6 +24,10 @@
 </script>
 
 {@render children()}
+
+{#if isConfigured}
+	<TabBar />
+{/if}
 
 <style>
 	:global(body) {

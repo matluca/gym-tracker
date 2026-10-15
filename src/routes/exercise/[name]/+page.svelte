@@ -205,7 +205,7 @@
 	main {
 		max-width: 34rem;
 		margin: 0 auto;
-		padding: 1.5rem 1rem 4rem;
+		padding: 1.5rem 1rem 6rem;
 	}
 
 	header {

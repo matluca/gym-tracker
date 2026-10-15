@@ -127,11 +127,16 @@ changes nothing in the live project.
 
 - `/` — log a set, plus today's sets grouped by exercise (filtered client-side from the
   50-most-recent subscription). Exercise names link to their history page.
+- `/history` — training days newest first, each listing exercises with set count and best
+  set; tap a day to expand every set. Pages by `createdAt` (200 sets per "Load older") and
+  hides the oldest, possibly-incomplete days — see `subscribeToHistory` for why the
+  `performedAt` ≤ `createdAt` + 1 day rule cap makes that bound safe.
 - `/exercise/[name]` — progression for one exercise: stat tiles, a chart (est. 1RM / top
   weight / volume per day) and every set grouped by day. `[name]` is the *stored* value
   (English for built-ins); build links with `exerciseHref()`, never by hand.
 
-`initAuth()` and global body styles live in `+layout.svelte` so a deep link to any route
+`initAuth()`, global body styles and the bottom `TabBar` (Log / History) live in
+`+layout.svelte` so a deep link to any route
 signs in and looks right. The chart is hand-rolled SVG (`ProgressChart.svelte`) to keep a
 charting library out of the bundle; the stats maths is in `src/lib/progress.ts`.
 

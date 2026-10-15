@@ -70,6 +70,50 @@ export function subscribeToWorkouts(
 	);
 }
 
+export type HistoryWindow = {
+	/** Loaded sets, oldest first by training date. */
+	workouts: Workout[];
+	/**
+	 * Training days starting before this instant may be missing sets that
+	 * haven't been loaded yet; null means everything is loaded.
+	 */
+	completeFrom: Date | null;
+};
+
+/**
+ * Subscribe to the `max` most recently entered sets, for the History tab.
+ *
+ * Paging is by entry time (`createdAt`), because older documents have no
+ * `performedAt` to range over. That makes the oldest loaded training days
+ * possibly incomplete — but only by a bounded amount: the rules cap
+ * `performedAt` at `createdAt` + 1 day, so any set not yet loaded was
+ * performed before (oldest loaded `createdAt` + 1 day). `completeFrom` is
+ * that bound; callers hide days before it until more is loaded.
+ */
+export function subscribeToHistory(
+	uid: string,
+	max: number,
+	onChange: (window: HistoryWindow) => void,
+	onError: (error: Error) => void
+): () => void {
+	const q = query(workoutsCollection(uid), orderBy('createdAt', 'desc'), limit(max));
+
+	return onSnapshot(
+		q,
+		(snapshot) => {
+			const workouts = toWorkouts(snapshot);
+			let completeFrom: Date | null = null;
+			if (snapshot.size >= max) {
+				const oldest = Math.min(...workouts.map((w) => w.createdAt?.getTime() ?? Date.now()));
+				completeFrom = new Date(oldest + 86_400_000);
+			}
+			workouts.sort((a, b) => time(a) - time(b));
+			onChange({ workouts, completeFrom });
+		},
+		onError
+	);
+}
+
 /**
  * Subscribe to every set of one exercise, oldest first.
  *

@@ -20,6 +20,7 @@
 	} from '$lib/firebase/workouts';
 	import { atCurrentTime, toLocalDateString } from '$lib/dates';
 	import { i18n } from '$lib/i18n.svelte';
+	import { byExercise } from '$lib/progress';
 
 	const t = $derived(i18n.t);
 
@@ -46,18 +47,11 @@
 	// Today's sets grouped by exercise, in the order you trained them. Filtered
 	// from the recent-sets subscription (50 most recently entered), which covers
 	// a day's training without a second listener.
-	const todaysGroups = $derived.by(() => {
-		const groups = new Map<string, Workout[]>();
-		const sets = workouts
-			.filter((w) => toLocalDateString(w.date ?? new Date()) === today)
-			.reverse(); // subscription is newest first
-		for (const w of sets) {
-			const list = groups.get(w.exercise);
-			if (list) list.push(w);
-			else groups.set(w.exercise, [w]);
-		}
-		return [...groups.entries()].map(([exercise, sets]) => ({ exercise, sets }));
-	});
+	const todaysGroups = $derived(
+		byExercise(
+			workouts.filter((w) => toLocalDateString(w.date ?? new Date()) === today).reverse() // subscription is newest first
+		)
+	);
 
 	// Built-ins + the user's own, de-duplicated case-insensitively. Exercises
 	// that only appear in logged sets are included too, so history from before
@@ -334,7 +328,7 @@
 	main {
 		max-width: 34rem;
 		margin: 0 auto;
-		padding: 1.5rem 1rem 4rem;
+		padding: 1.5rem 1rem 6rem;
 	}
 
 	header {

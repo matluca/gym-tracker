@@ -78,6 +78,24 @@ export function personalBestIds(workouts: Workout[]): Set<string> {
 	return ids;
 }
 
+/** Heaviest set; on a tie, the one with more reps. */
+export function bestSet(sets: Workout[]): Workout {
+	return sets.reduce((best, s) =>
+		s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps) ? s : best
+	);
+}
+
+/** Group sets by exercise, keeping the order each exercise was first done. */
+export function byExercise(sets: Workout[]): { exercise: string; sets: Workout[] }[] {
+	const groups = new Map<string, Workout[]>();
+	for (const s of sets) {
+		const list = groups.get(s.exercise);
+		if (list) list.push(s);
+		else groups.set(s.exercise, [s]);
+	}
+	return [...groups.entries()].map(([exercise, sets]) => ({ exercise, sets }));
+}
+
 /** Round to the nearest 0.5 — the precision plates actually come in. */
 export function roundHalf(value: number): number {
 	return Math.round(value * 2) / 2;
