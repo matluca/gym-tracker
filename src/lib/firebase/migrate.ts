@@ -1,5 +1,6 @@
 /**
- * Copy an anonymous user's data into the account they sign in to.
+ * Bulk operations on a user's data: copying an anonymous user's data into the
+ * account they sign in to, and deleting everything when an account is deleted.
  *
  * Signing in to an existing account switches uid, which would strand anything
  * logged anonymously on this device. So the caller snapshots the anonymous
@@ -38,6 +39,26 @@ export async function readUserData(uid: string): Promise<UserData> {
 
 /** Firestore caps a batch at 500 writes; stay clear of it. */
 const BATCH_SIZE = 400;
+
+/**
+ * Delete every set and custom exercise under `uid`. Awaited — unlike the
+ * import, the caller deletes the auth user next, and must only do that once
+ * the data is really gone (afterwards nobody can reach it to retry).
+ */
+export async function deleteUserData(uid: string): Promise<void> {
+	const { db } = getFirebase();
+	const snapshots = await Promise.all([
+		getDocs(collection(db, 'users', uid, 'workouts')),
+		getDocs(collection(db, 'users', uid, 'exercises'))
+	]);
+	const refs = snapshots.flatMap((snap) => snap.docs.map((d) => d.ref));
+
+	for (let i = 0; i < refs.length; i += BATCH_SIZE) {
+		const batch = writeBatch(db);
+		for (const ref of refs.slice(i, i + BATCH_SIZE)) batch.delete(ref);
+		await batch.commit();
+	}
+}
 
 /**
  * Write `data` under `uid`. Custom exercises the account already has

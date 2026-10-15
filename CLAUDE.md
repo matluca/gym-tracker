@@ -165,6 +165,12 @@ Account tab (`/account`) upgrades it:
   date in `performedAt`. The anonymous originals are orphaned, not deleted.
 - **Sign out** → `onAuthStateChanged` sees no user and signs in anonymously again, so the
   app always has a uid.
+- **Delete account** (`deleteAccount`, `DeleteAccount.svelte`, also offered to anonymous
+  users as "Delete my data") → re-authenticate with the password (email accounts), delete
+  every doc under `users/{uid}` (`deleteUserData`, awaited), *then* `deleteUser`. Order
+  matters: once the auth user is gone the rules lock everyone out of the data, so a failure
+  after that point would orphan it. Ends on a fresh anonymous session like sign-out.
+  **Adding a new per-user collection means adding it to `deleteUserData` too.**
 
 Read `auth.isAnonymous` / `auth.email` / `auth.emailVerified`, not `auth.user.*`: the
 `User` is a class instance mutated in place by linking and `reload()`, so its fields

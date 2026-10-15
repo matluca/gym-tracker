@@ -140,13 +140,16 @@
 			<h2>7. Speicherdauer</h2>
 			<ul>
 				<li>
-					Trainingsdaten und Konto speichern wir, bis du sie löschst oder die Löschung verlangst.
-					Einzelne Sätze kannst du jederzeit selbst in der App löschen.
+					Trainingsdaten und Konto speichern wir, bis du sie löschst. Einzelne Sätze kannst du
+					jederzeit in der App löschen, dein gesamtes Konto mit allen Daten im Konto-Tab unter „Konto
+					löschen“. Die Daten werden dabei sofort gelöscht; aus den Sicherungskopien von Google
+					verschwinden sie nach dessen Angaben innerhalb von 180 Tagen.
 				</li>
 				<li>
-					Wenn du dich abmeldest oder die Websitedaten deines Browsers löschst, ist ein anonymes Konto
-					nicht mehr erreichbar. Die zugehörigen Daten bleiben gespeichert, bis du ihre Löschung
-					verlangst.
+					Ohne Konto kannst du deine Daten im Konto-Tab unter „Meine Daten löschen“ entfernen. Wenn du
+					dich abmeldest oder die Websitedaten deines Browsers löschst, bevor du das tust, ist ein
+					anonymes Konto nicht mehr erreichbar; die zugehörigen Daten bleiben dann gespeichert, bis du
+					ihre Löschung verlangst.
 				</li>
 				<li>Technische Protokolle werden nach kurzer Zeit automatisch gelöscht (siehe Abschnitt 2).</li>
 			</ul>
@@ -270,12 +273,15 @@
 			<h2>7. How long we keep data</h2>
 			<ul>
 				<li>
-					We keep your training data and account until you delete them or ask us to. You can delete
-					individual sets in the app at any time.
+					We keep your training data and account until you delete them. You can delete individual sets
+					in the app at any time, and your whole account with all its data on the Account tab under
+					“Delete account”. The data is deleted immediately; according to Google, it is removed from
+					its backups within 180 days.
 				</li>
 				<li>
-					If you sign out or clear your browser's site data, an anonymous account can no longer be
-					reached. Its data stays stored until you ask us to delete it.
+					Without an account, you can remove your data on the Account tab under “Delete my data”. If
+					you sign out or clear your browser's site data before doing so, an anonymous account can no
+					longer be reached; its data then stays stored until you ask us to delete it.
 				</li>
 				<li>Technical logs are deleted automatically after a short time (see section 2).</li>
 			</ul>

@@ -11,8 +11,10 @@
  * account and copies this device's anonymous data across.
  */
 import {
+	deleteUser,
 	EmailAuthProvider,
 	linkWithCredential,
+	reauthenticateWithCredential,
 	onAuthStateChanged,
 	reload,
 	sendEmailVerification,
@@ -25,7 +27,7 @@ import {
 import { FirebaseError } from 'firebase/app';
 
 import { getFirebase } from './client';
-import { importUserData, readUserData } from './migrate';
+import { deleteUserData, importUserData, readUserData } from './migrate';
 
 export const auth = $state<{
 	user: User | null;
@@ -157,6 +159,30 @@ export async function refreshUser(): Promise<void> {
 	if (!user) return;
 	await reload(user);
 	sync(user);
+}
+
+/**
+ * Permanently delete the current user: all their Firestore data, then the
+ * auth account. `onAuthStateChanged` then sees no user and signs in a fresh
+ * anonymous one, so the app keeps working.
+ *
+ * Email accounts must re-enter their password first. Firebase refuses to
+ * delete an account without a recent sign-in, and asking up front avoids
+ * deleting the data and then failing on the account.
+ */
+export async function deleteAccount(password?: string): Promise<void> {
+	const { auth: firebaseAuth } = getFirebase();
+	const user = firebaseAuth.currentUser;
+	if (!user) throw new Error('Not signed in.');
+
+	if (!user.isAnonymous) {
+		if (!user.email || !password) throw new Error('Password required.');
+		await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+	}
+
+	// Data first: once the account is gone the rules lock everyone out of it.
+	await deleteUserData(user.uid);
+	await deleteUser(user);
 }
 
 export async function signOutUser(): Promise<void> {

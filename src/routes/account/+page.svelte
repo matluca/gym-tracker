@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 
+	import DeleteAccount from '$lib/components/DeleteAccount.svelte';
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import {
 		auth,
@@ -27,6 +28,8 @@
 	/** Success message shown after an action (reset sent, data copied, …). */
 	let notice = $state<string | null>(null);
 	let verifySent = $state(false);
+	/** Shown once after deleting, above whatever the page renders next. */
+	let deletedNotice = $state<string | null>(null);
 
 	const MIN_PASSWORD = 8;
 
@@ -88,6 +91,15 @@
 		});
 	}
 
+	/** After deletion the app is on a fresh anonymous session; say what happened. */
+	function handleDeleted(message: string) {
+		mode = 'create';
+		email = '';
+		password = '';
+		error = null;
+		deletedNotice = message;
+	}
+
 	function handleResend() {
 		run(async () => {
 			await resendVerification();
@@ -115,6 +127,10 @@
 			<LocaleSwitcher />
 		</div>
 	</header>
+
+	{#if deletedNotice}
+		<p class="ok banner" role="status">{deletedNotice}</p>
+	{/if}
 
 	{#if !isConfigured}
 		<p class="muted">Firebase isn't configured yet. See <code>README.md</code>.</p>
@@ -166,6 +182,8 @@
 			</button>
 			<p class="hint">{t.signOutNote}</p>
 		</section>
+
+		<DeleteAccount onDeleted={handleDeleted} />
 	{:else}
 		<!-- Anonymous: create an account or sign in -->
 		<section class="card">
@@ -263,6 +281,8 @@
 				</button>
 			{/if}
 		</section>
+
+		<DeleteAccount onDeleted={handleDeleted} />
 	{/if}
 
 	{#if isConfigured && auth.user}
@@ -478,6 +498,14 @@
 
 	.locale {
 		align-self: center;
+	}
+
+	.banner {
+		margin: 0 0 1rem;
+		padding: 0.75rem 1rem;
+		background: #13261a;
+		border: 1px solid #22462e;
+		border-radius: 0.5rem;
 	}
 
 	.fine {
