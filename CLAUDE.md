@@ -97,7 +97,12 @@ handler bails out on any non-same-origin URL and on non-GET — keep it that way
 
 SvelteKit registers the worker automatically. `$service-worker` supplies the build manifest
 and a `version` that rotates the cache name each build; `activate` deletes every other
-cache. Install uses `Promise.allSettled` rather than `cache.addAll` because in `vite dev`
+cache. The `fetch` handler serves cache-first **only for paths in the build manifest** (hashed,
+so always correct) and leaves everything else to the network uncached. Caching other
+same-origin GETs used to pin `vite dev` modules (`/src/...`, whose URLs don't change as
+you edit), so source edits vanished behind stale copies.
+
+Install uses `Promise.allSettled` rather than `cache.addAll` because in `vite dev`
 the built assets and the `index.html` fallback don't exist yet, and one 404 would abort
 the whole install.
 

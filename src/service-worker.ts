@@ -17,6 +17,7 @@ const CACHE = `gym-tracker-${version}`;
 const FALLBACK = '/index.html';
 
 const PRECACHE = [...build, ...files, FALLBACK];
+const PRECACHE_PATHS = new Set(PRECACHE);
 
 sw.addEventListener('install', (event) => {
 	event.waitUntil(
@@ -70,24 +71,18 @@ sw.addEventListener('fetch', (event) => {
 		return;
 	}
 
+	// Only the build manifest is served cache-first. Those files are
+	// content-hashed (or rotate with `version`), so a cache hit is always
+	// correct. Anything else — notably `vite dev` modules like
+	// /src/lib/Foo.svelte, whose URL never changes as you edit — goes to the
+	// network and is never cached, or edits would be masked by a stale copy.
+	if (!PRECACHE_PATHS.has(url.pathname)) return;
+
 	event.respondWith(
 		(async () => {
-			const cache = await caches.open(CACHE);
-
-			// Build assets are content-hashed, so a cache hit is always correct
-			// and we can skip the network entirely.
-			const cached = await cache.match(request);
+			const cached = await caches.match(request, { cacheName: CACHE });
 			if (cached) return cached;
-
-			try {
-				const response = await fetch(request);
-				if (response.ok && response.type === 'basic') {
-					cache.put(request, response.clone());
-				}
-				return response;
-			} catch {
-				return Response.error();
-			}
+			return fetch(request);
 		})()
 	);
 });
