@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 
 	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import ProgressChart from '$lib/components/ProgressChart.svelte';
 	import { toLocalDateString } from '$lib/dates';
 	import { auth } from '$lib/firebase/auth.svelte';
@@ -150,9 +149,6 @@
 <main>
 	<header>
 		<h1>{t.progress}</h1>
-		<div class="locale">
-			<LocaleSwitcher />
-		</div>
 	</header>
 
 	{#if isConfigured && !auth.loading && !auth.error}
@@ -473,9 +469,6 @@
 		font-size: 0.9rem;
 	}
 
-	.locale {
-		align-self: center;
-	}
 
 	code {
 		background: #0b0d11;

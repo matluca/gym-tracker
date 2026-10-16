@@ -123,9 +123,6 @@
 <main>
 	<header>
 		<h1>{t.account}</h1>
-		<div class="locale">
-			<LocaleSwitcher />
-		</div>
 	</header>
 
 	{#if deletedNotice}
@@ -284,6 +281,11 @@
 
 		<DeleteAccount onDeleted={handleDeleted} />
 	{/if}
+
+	<section class="card language">
+		<h2>{t.language}</h2>
+		<LocaleSwitcher />
+	</section>
 
 	{#if isConfigured && auth.user}
 		<footer>
@@ -496,8 +498,15 @@
 		font-size: 0.9rem;
 	}
 
-	.locale {
-		align-self: center;
+	.language {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.language h2 {
+		margin: 0;
 	}
 
 	.banner {

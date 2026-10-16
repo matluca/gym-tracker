@@ -3,7 +3,6 @@
 
 	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
 	import InstallHint from '$lib/components/InstallHint.svelte';
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import {
@@ -203,9 +202,6 @@
 		{#if !online}
 			<span class="badge badge--offline">{t.offline}</span>
 		{/if}
-		<div class="locale">
-			<LocaleSwitcher />
-		</div>
 	</header>
 
 	{#if !isConfigured}
@@ -508,12 +504,6 @@
 		padding: 0.35rem 0.6rem;
 		font-size: 0.8rem;
 		font-weight: 500;
-	}
-
-	.locale {
-		margin-left: auto;
-		/* The header aligns on text baseline; the flags have none. */
-		align-self: center;
 	}
 
 	.badge {

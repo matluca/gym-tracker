@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import { exerciseHref, exerciseLabel } from '$lib/firebase/exercises';
@@ -92,9 +91,6 @@
 <main>
 	<header>
 		<h1>{t.historyTitle}</h1>
-		<div class="locale">
-			<LocaleSwitcher />
-		</div>
 	</header>
 
 	{#if !isConfigured}
@@ -376,10 +372,6 @@
 	.error {
 		color: #ff8080;
 		font-size: 0.9rem;
-	}
-
-	.locale {
-		align-self: center;
 	}
 
 	.visually-hidden {

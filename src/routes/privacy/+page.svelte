@@ -11,7 +11,6 @@
 	 * a new Firebase product, or another stored field, update both languages
 	 * and `LAST_UPDATED` below.
 	 */
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { i18n } from '$lib/i18n.svelte';
 
 	const t = $derived(i18n.t);
@@ -34,9 +33,6 @@
 <main>
 	<header>
 		<h1>{t.privacyTitle}</h1>
-		<div class="locale">
-			<LocaleSwitcher />
-		</div>
 	</header>
 
 	<article>
@@ -372,8 +368,6 @@
 		color: #e6e8eb;
 	}
 
-
-
 	.meta {
 		color: #78818c;
 		font-size: 0.85rem;
@@ -383,11 +377,6 @@
 		color: #9aa3ad;
 		font-size: 0.85rem;
 		font-style: italic;
-	}
-
-
-	.locale {
-		align-self: center;
 	}
 
 </style>
