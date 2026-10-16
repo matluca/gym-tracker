@@ -362,6 +362,10 @@
 
 	.row label {
 		flex: 1;
+		/* Flex items won't shrink below their content by default, and number
+		   inputs have a wide intrinsic size — side by side they overflow a phone,
+		   which then zooms the whole page out and pushes the tab bar off-screen. */
+		min-width: 0;
 	}
 
 	.field {
@@ -401,6 +405,9 @@
 	}
 
 	input {
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
 		background: #0f1115;
 		border: 1px solid #2d333d;
 		border-radius: 0.5rem;
