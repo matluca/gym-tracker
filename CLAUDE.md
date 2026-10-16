@@ -227,8 +227,11 @@ Machines (`GYM80_MACHINES` in `src/lib/machines.ts`, McFIT's gym80 range) work t
 stored by English name in the same `exercise` field, so the data model and rules don't
 distinguish them. `exerciseCategory()` derives the category from the name, and the picker
 groups options under Machines / Exercises, with machines further split into one
-sub-heading per entry of `GYM80_MACHINE_GROUPS` (product line · body part). Never rename a
-shipped entry, and keep names unique across both lists.
+sub-heading per entry of `GYM80_MACHINE_GROUPS` (product line · body part). Each machine's
+`id` is its gym80 article number; the Progress tab links to its catalogue page
+(`gym80ProductUrl`). Product photos are deliberately not shown: gym80's Impressum forbids
+reusing their images without consent. Never rename a shipped entry, and keep names unique
+across both lists.
 
 ## Notes
 

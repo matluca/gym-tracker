@@ -14,7 +14,12 @@ import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firest
 import { resolve } from '$app/paths';
 
 import type { Locale } from '#lib/i18n.svelte.js';
-import { GYM80_MACHINE_GROUPS, GYM80_MACHINES, type MachineGroup } from '#lib/machines.js';
+import {
+	GYM80_MACHINE_GROUPS,
+	GYM80_MACHINES,
+	gym80ProductUrl,
+	type MachineGroup
+} from '#lib/machines.js';
 
 import { getFirebase } from './client';
 
@@ -57,7 +62,7 @@ const defaultsByValue = new Map(
 );
 const groupByMachine = new Map(
 	GYM80_MACHINE_GROUPS.flatMap((g, rank) =>
-		g.machines.map((m) => [m.en.toLowerCase(), { group: g, rank }] as const)
+		g.machines.map((m) => [m.en.toLowerCase(), { machine: m, group: g, rank }] as const)
 	)
 );
 
@@ -77,6 +82,12 @@ export function machineGroup(value: string, locale: Locale): OptionGroup | undef
 	const found = groupByMachine.get(value.toLowerCase());
 	if (!found) return undefined;
 	return { key: found.group.key, label: groupLabel(found.group, locale), rank: found.rank };
+}
+
+/** gym80 catalogue page for a stored machine value; undefined for exercises. */
+export function machineProductUrl(value: string, locale: Locale): string | undefined {
+	const found = groupByMachine.get(value.toLowerCase());
+	return found && gym80ProductUrl(found.machine, locale);
 }
 
 /**

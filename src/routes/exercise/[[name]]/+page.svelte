@@ -12,6 +12,7 @@
 		exerciseHref,
 		exerciseLabel,
 		getLastViewedExercise,
+		machineProductUrl,
 		setLastViewedExercise,
 		subscribeToExercises
 	} from '#lib/firebase/exercises.js';
@@ -36,6 +37,7 @@
 	// already URL-decoded by SvelteKit. Empty on the bare /exercise tab.
 	const exercise = $derived(page.params.name ?? '');
 	const label = $derived(exerciseLabel(exercise, i18n.locale));
+	const productUrl = $derived(machineProductUrl(exercise, i18n.locale));
 
 	// Bare tab: reopen the last exercise viewed on this device. `replace`
 	// so Back doesn't bounce between /exercise and /exercise/X.
@@ -155,6 +157,11 @@
 		<div class="pick">
 			<label for="progress-exercise" class="visually-hidden">{t.exercise}</label>
 			<ExercisePicker id="progress-exercise" bind:value={picked} {options} />
+			{#if productUrl}
+				<a class="product-link" href={productUrl} target="_blank" rel="noopener noreferrer">
+					{t.viewOnGym80} <span aria-hidden="true">↗</span>
+				</a>
+			{/if}
 		</div>
 	{/if}
 
@@ -284,6 +291,18 @@
 	.pick :global(input) {
 		font-size: 1.15rem;
 		font-weight: 600;
+	}
+
+	.product-link {
+		display: inline-block;
+		margin-top: 0.5rem;
+		color: #4c8dff;
+		font-size: 0.9rem;
+		text-decoration: none;
+	}
+
+	.product-link:hover {
+		text-decoration: underline;
 	}
 
 	.visually-hidden {
