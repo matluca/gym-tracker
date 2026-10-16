@@ -1,0 +1,39 @@
+# Type-check and build every push to main and every PR (including
+# Dependabot's). There is no test suite; `npm run check` is the automated
+# verification this project has.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # $env/static/public imports fail the build if a variable is missing.
+      # The blank placeholders are enough: the app treats them as "not
+      # configured" instead of connecting to Firebase.
+      - run: cp .env.example .env
+
+      - run: npm run check
+
+      - run: npm run build

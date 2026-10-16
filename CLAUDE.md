@@ -16,7 +16,10 @@ npm run deploy:rules   # deploy only firestore.rules
 ```
 
 There is no test framework installed and no test suite. `npm run check` is the only
-automated verification. If adding tests, `@firebase/rules-unit-testing` against the
+automated verification. CI (`.github/workflows/ci.yml`) runs `npm ci`, `check` and `build` on
+every push to `main` and every PR, using the blank `.env.example` values. Dependabot
+(`.github/dependabot.yml`) opens weekly npm PRs, grouping the Svelte packages together
+since they must move in step. If adding tests, `@firebase/rules-unit-testing` against the
 emulator is the highest-value place to start — the rules carry real logic.
 
 ### Verifying changes locally
