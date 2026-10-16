@@ -166,6 +166,9 @@ changes nothing in the live project.
   *stored* value (English for built-ins) and is optional: bare `/exercise` redirects to the
   last exercise viewed on this device (localStorage), or shows an empty state. Build links
   with `exerciseHref()`, never by hand — every exercise name in the app links here.
+  Its "Log a set" button links to `/?exercise=<name>` (`logSetHref()`); the Log tab
+  preselects that name, focuses the weight field and strips the param with
+  `goto(…, { replace: true })`.
 
 `initAuth()`, global body styles and the bottom `TabBar` (Log / History / Progress / Account) live in
 `+layout.svelte` so a deep link to any route

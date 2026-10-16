@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+
 	import ExercisePicker from '#lib/components/ExercisePicker.svelte';
 	import InstallHint from '#lib/components/InstallHint.svelte';
 	import { auth } from '#lib/firebase/auth.svelte.js';
@@ -10,6 +14,7 @@
 		buildExerciseOptions,
 		exerciseLabel,
 		exerciseHref,
+		LOG_EXERCISE_PARAM,
 		subscribeToExercises
 	} from '#lib/firebase/exercises.js';
 	import {
@@ -31,10 +36,22 @@
 	let saving = $state(false);
 	let online = $state(true);
 
-	let exercise = $state('');
+	// Preselected by the Progress tab's "Log a set" link. Read once: the param
+	// is stripped from the URL on mount. Anything the rules would reject as an
+	// exercise name is ignored.
+	const requested = (() => {
+		const value = page.url.searchParams.get(LOG_EXERCISE_PARAM)?.trim() ?? '';
+		return value.length <= 100 ? value : '';
+	})();
+
+	let exercise = $state(requested);
 	// Set once the field has been prefilled (or the user has picked something),
 	// so later snapshots never overwrite their choice.
-	let exerciseTouched = false;
+	let exerciseTouched = requested !== '';
+	// Focused once the form renders after arriving with a preselected exercise,
+	// so the weight can be typed straight away.
+	let focusWeight = requested !== '';
+	let weightInput = $state<HTMLInputElement>();
 	let weight = $state<number | null>(null);
 	let reps = $state<number | null>(null);
 	// Kept after saving, so several sets can be backdated in a row.
@@ -56,7 +73,9 @@
 	const exerciseOptions = $derived(
 		buildExerciseOptions(
 			customExercises,
-			workouts.map((w) => w.exercise),
+			// The requested name may be older than the recent-sets subscription
+			// reaches; the picker only keeps a value that is one of its options.
+			[...workouts.map((w) => w.exercise), ...(requested ? [requested] : [])],
 			i18n.locale
 		)
 	);
@@ -73,6 +92,12 @@
 	);
 
 	onMount(() => {
+		// Drop the param so a reload, or the PWA reopening on this URL, doesn't
+		// override whatever has been picked since.
+		if (page.url.searchParams.has(LOG_EXERCISE_PARAM)) {
+			goto(resolve('/'), { replace: true, reset: false });
+		}
+
 		const refreshToday = () => {
 			const next = toLocalDateString(new Date());
 			// Roll the selection forward too if it was on "today".
@@ -114,6 +139,14 @@
 			},
 			(error) => (listError = error.message)
 		);
+	});
+
+	// The form only renders once auth has settled, so wait for the input.
+	$effect(() => {
+		if (focusWeight && weightInput) {
+			weightInput.focus();
+			focusWeight = false;
+		}
 	});
 
 	$effect(() => {
@@ -249,7 +282,15 @@
 				<div class="row">
 					<label>
 						<span>{t.weightKg}</span>
-						<input type="number" bind:value={weight} min="0" step="0.5" placeholder="80" required />
+						<input
+							type="number"
+							bind:this={weightInput}
+							bind:value={weight}
+							min="0"
+							step="0.5"
+							placeholder="80"
+							required
+						/>
 					</label>
 					<label>
 						<span>{t.reps}</span>

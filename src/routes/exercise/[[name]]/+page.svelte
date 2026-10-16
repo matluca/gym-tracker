@@ -12,6 +12,7 @@
 		exerciseHref,
 		exerciseLabel,
 		getLastViewedExercise,
+		logSetHref,
 		machineProductUrl,
 		setLastViewedExercise,
 		subscribeToExercises
@@ -157,10 +158,15 @@
 		<div class="pick">
 			<label for="progress-exercise" class="visually-hidden">{t.exercise}</label>
 			<ExercisePicker id="progress-exercise" bind:value={picked} {options} />
-			{#if productUrl}
-				<a class="product-link" href={productUrl} target="_blank" rel="noopener noreferrer">
-					{t.viewOnGym80} <span aria-hidden="true">↗</span>
-				</a>
+			{#if exercise}
+				<div class="actions">
+					<a class="log-link" href={logSetHref(exercise)}>{t.logSet}</a>
+					{#if productUrl}
+						<a class="product-link" href={productUrl} target="_blank" rel="noopener noreferrer">
+							{t.viewOnGym80} <span aria-hidden="true">↗</span>
+						</a>
+					{/if}
+				</div>
 			{/if}
 		</div>
 	{/if}
@@ -293,9 +299,31 @@
 		font-weight: 600;
 	}
 
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+		margin-top: 0.75rem;
+	}
+
+	/* A link, since it navigates, styled like the app's primary buttons. */
+	.log-link {
+		background: #4c8dff;
+		color: #061021;
+		border-radius: 0.5rem;
+		padding: 0.55rem 1rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.log-link:focus-visible {
+		outline: 2px solid #4c8dff;
+		outline-offset: 2px;
+	}
+
 	.product-link {
-		display: inline-block;
-		margin-top: 0.5rem;
 		color: #4c8dff;
 		font-size: 0.9rem;
 		text-decoration: none;

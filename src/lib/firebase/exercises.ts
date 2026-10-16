@@ -104,6 +104,14 @@ export function exerciseHref(value: string): string {
 	return resolve('/exercise/[[name]]', { name: value });
 }
 
+/** Query parameter the Log tab reads to preselect an exercise. */
+export const LOG_EXERCISE_PARAM = 'exercise';
+
+/** Link to the Log tab with a stored exercise value preselected. */
+export function logSetHref(value: string): string {
+	return `${resolve('/')}?${new URLSearchParams({ [LOG_EXERCISE_PARAM]: value })}`;
+}
+
 export type ExerciseOption = {
 	value: string;
 	label: string;
