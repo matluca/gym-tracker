@@ -223,6 +223,13 @@ Built-in exercise names are translated via `DEFAULT_EXERCISES` / `exerciseLabel(
 documents; translation is display-only, so switching language never forks history.
 User-added exercise names are stored and shown exactly as typed.
 
+Machines (`GYM80_MACHINES` in `src/lib/machines.ts`, McFIT's gym80 range) work the same way:
+stored by English name in the same `exercise` field, so the data model and rules don't
+distinguish them. `exerciseCategory()` derives the category from the name, and the picker
+groups options under Machines / Exercises, with machines further split into one
+sub-heading per entry of `GYM80_MACHINE_GROUPS` (product line · body part). Never rename a
+shipped entry, and keep names unique across both lists.
+
 ## Notes
 
 - `.firebaserc` is intentionally absent. Run `firebase use --add` to create it.

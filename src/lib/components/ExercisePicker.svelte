@@ -10,10 +10,19 @@
 	 * "Kniebeuge" in German. When the typed text matches nothing, an extra
 	 * "Add …" option calls `onAdd`; the parent is expected to add it to `options`.
 	 * Without `onAdd` the picker is select-only: no "Add …" option.
+	 *
+	 * Options with a `category` are listed under a heading per category, machines
+	 * first; options with a `group` also get a sub-heading per group, ordered by
+	 * its `rank`.
 	 */
 	import { i18n } from '#lib/i18n.svelte.js';
 
-	export type PickerOption = { value: string; label: string };
+	export type PickerOption = {
+		value: string;
+		label: string;
+		category?: 'exercise' | 'machine';
+		group?: { key: string; label: string; rank: number };
+	};
 
 	let {
 		value = $bindable(''),
@@ -28,6 +37,12 @@
 	} = $props();
 
 	type Item = { kind: 'option'; option: PickerOption } | { kind: 'add'; name: string };
+
+	const CATEGORY_ORDER = ['machine', 'exercise'] as const;
+	const categoryRank = (o: PickerOption) => (o.category ? CATEGORY_ORDER.indexOf(o.category) : 0);
+	const groupRank = (o: PickerOption) => o.group?.rank ?? -1;
+	const sectionOrder = (a: PickerOption, b: PickerOption) =>
+		categoryRank(a) - categoryRank(b) || groupRank(a) - groupRank(b);
 
 	function labelFor(v: string): string {
 		return options.find((o) => o.value === v)?.label ?? v;
@@ -84,12 +99,51 @@
 					.filter(
 						(o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
 					)
-					.sort((a, b) => rank(a) - rank(b) || collator.compare(a.label, b.label))
-			: [...options].sort((a, b) => collator.compare(a.label, b.label));
+					.sort(
+						(a, b) =>
+							sectionOrder(a, b) || rank(a) - rank(b) || collator.compare(a.label, b.label)
+					)
+			: [...options].sort((a, b) => sectionOrder(a, b) || collator.compare(a.label, b.label));
 
 		const list: Item[] = matches.map((option) => ({ kind: 'option', option }));
 		if (onAdd && filtering && query && !exactMatch) list.push({ kind: 'add', name: query });
 		return list;
+	});
+
+	type Section = {
+		key: string;
+		/** Category heading, set on the first section of each category. */
+		heading: string | null;
+		subheading: string | null;
+		entries: { item: Item; index: number }[];
+	};
+
+	// `items` split into consecutive runs by category and group, for rendering.
+	// Indexes stay global so keyboard navigation can ignore the grouping.
+	const sections = $derived.by(() => {
+		const out: Section[] = [];
+		let lastCategory: string | null = null;
+		items.forEach((item, index) => {
+			const category = item.kind === 'add' ? 'add' : (item.option.category ?? 'none');
+			const group = item.kind === 'option' ? item.option.group : undefined;
+			const key = group ? `${category}-${group.key}` : category;
+			let section = out.at(-1);
+			if (section?.key !== key) {
+				const heading =
+					category === lastCategory
+						? null
+						: category === 'machine'
+							? i18n.t.pickerMachines
+							: category === 'exercise'
+								? i18n.t.pickerExercises
+								: null;
+				section = { key, heading, subheading: group?.label ?? null, entries: [] };
+				out.push(section);
+				lastCategory = category;
+			}
+			section.entries.push({ item, index });
+		});
+		return out;
 	});
 
 	function optionId(index: number) {
@@ -247,24 +301,40 @@
 
 	{#if open}
 		<ul id={listboxId} role="listbox" class="list" bind:this={listEl}>
-			{#each items as item, index (item.kind === 'add' ? 'add' : 'opt:' + item.option.value)}
-				<!-- Focus never leaves the input; keyboard handling lives there. -->
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<li
-					id={optionId(index)}
-					role="option"
-					aria-selected={index === activeIndex}
-					class:active={index === activeIndex}
-					class:add={item.kind === 'add'}
-					onmousedown={(e) => e.preventDefault()}
-					onclick={() => choose(item)}
-					onmousemove={() => (activeIndex = index)}
-				>
-					{#if item.kind === 'add'}
-						+ {i18n.t.pickerAdd(item.name)}
-					{:else}
-						{item.option.label}
+			{#each sections as section (section.key)}
+				<li role="presentation">
+					{#if section.heading}
+						<div class="group-label">{section.heading}</div>
 					{/if}
+					{#if section.subheading}
+						<div class="subgroup-label" id="{id}-group-{section.key}">{section.subheading}</div>
+					{/if}
+					<ul
+						role="group"
+						aria-label={section.subheading ? undefined : (section.heading ?? undefined)}
+						aria-labelledby={section.subheading ? `${id}-group-${section.key}` : undefined}
+					>
+						{#each section.entries as { item, index } (item.kind === 'add' ? 'add' : 'opt:' + item.option.value)}
+							<!-- Focus never leaves the input; keyboard handling lives there. -->
+							<!-- svelte-ignore a11y_click_events_have_key_events -->
+							<li
+								id={optionId(index)}
+								role="option"
+								aria-selected={index === activeIndex}
+								class:active={index === activeIndex}
+								class:add={item.kind === 'add'}
+								onmousedown={(e) => e.preventDefault()}
+								onclick={() => choose(item)}
+								onmousemove={() => (activeIndex = index)}
+							>
+								{#if item.kind === 'add'}
+									+ {i18n.t.pickerAdd(item.name)}
+								{:else}
+									{item.option.label}
+								{/if}
+							</li>
+						{/each}
+					</ul>
 				</li>
 			{:else}
 				<li class="empty" role="presentation">
@@ -331,6 +401,37 @@
 		border: 1px solid #2d333d;
 		border-radius: 0.5rem;
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+	}
+
+	ul[role='group'] {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.group-label {
+		padding: 0.5rem 0.6rem 0.3rem;
+		color: #78818c;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	/* Sticks within its own group while that group scrolls past. */
+	.subgroup-label {
+		position: sticky;
+		top: -0.25rem;
+		background: #171a21;
+		padding: 0.4rem 0.6rem 0.2rem;
+		color: #9aa3ad;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	li[role='presentation'] {
+		padding: 0;
+		cursor: default;
 	}
 
 	li {

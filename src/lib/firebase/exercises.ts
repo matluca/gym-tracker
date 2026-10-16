@@ -3,7 +3,8 @@
  *
  * Data model: users/{uid}/exercises/{exerciseId}
  *
- * The selectable list is DEFAULT_EXERCISES plus whatever the user has added.
+ * The selectable list is DEFAULT_EXERCISES and GYM80_MACHINES (#lib/machines)
+ * plus whatever the user has added.
  * Defaults live in code rather than being seeded into Firestore so every new
  * (anonymous) user gets them without a write, and so the list can be improved
  * by shipping a build.
@@ -13,6 +14,7 @@ import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firest
 import { resolve } from '$app/paths';
 
 import type { Locale } from '#lib/i18n.svelte.js';
+import { GYM80_MACHINE_GROUPS, GYM80_MACHINES, type MachineGroup } from '#lib/machines.js';
 
 import { getFirebase } from './client';
 
@@ -48,11 +50,38 @@ export const DEFAULT_EXERCISES: readonly { en: string; de: string }[] = [
 	{ en: 'Push-up', de: 'Liegestütz' }
 ];
 
-const defaultsByValue = new Map(DEFAULT_EXERCISES.map((e) => [e.en.toLowerCase(), e]));
+export type ExerciseCategory = 'exercise' | 'machine';
+
+const defaultsByValue = new Map(
+	[...DEFAULT_EXERCISES, ...GYM80_MACHINES].map((e) => [e.en.toLowerCase(), e])
+);
+const groupByMachine = new Map(
+	GYM80_MACHINE_GROUPS.flatMap((g, rank) =>
+		g.machines.map((m) => [m.en.toLowerCase(), { group: g, rank }] as const)
+	)
+);
+
+/** Machines are the built-in gym80 list; everything else, custom names included, is an exercise. */
+export function exerciseCategory(value: string): ExerciseCategory {
+	return groupByMachine.has(value.toLowerCase()) ? 'machine' : 'exercise';
+}
+
+export type OptionGroup = { key: string; label: string; rank: number };
+
+function groupLabel(group: MachineGroup, locale: Locale): string {
+	return `${group.line} · ${group[locale]}`;
+}
+
+/** The catalogue section a machine belongs to; undefined for exercises. */
+export function machineGroup(value: string, locale: Locale): OptionGroup | undefined {
+	const found = groupByMachine.get(value.toLowerCase());
+	if (!found) return undefined;
+	return { key: found.group.key, label: groupLabel(found.group, locale), rank: found.rank };
+}
 
 /**
- * Display name for a stored exercise value. Built-ins are translated; names
- * the user typed themselves are shown as-is.
+ * Display name for a stored exercise or machine value. Built-ins are
+ * translated; names the user typed themselves are shown as-is.
  */
 export function exerciseLabel(value: string, locale: Locale): string {
 	const builtIn = defaultsByValue.get(value.toLowerCase());
@@ -64,21 +93,36 @@ export function exerciseHref(value: string): string {
 	return resolve('/exercise/[[name]]', { name: value });
 }
 
+export type ExerciseOption = {
+	value: string;
+	label: string;
+	category: ExerciseCategory;
+	group?: OptionGroup;
+};
+
 /**
- * Everything the exercise picker offers: built-ins, the user's own, and names
- * that only appear in logged sets (so history from before the picker existed
- * stays selectable). De-duplicated case-insensitively, first spelling wins.
+ * Everything the exercise picker offers: built-in exercises and machines, the
+ * user's own, and names that only appear in logged sets (so history from
+ * before the picker existed stays selectable). De-duplicated
+ * case-insensitively, first spelling wins.
  */
 export function buildExerciseOptions(
 	custom: string[],
 	logged: string[],
 	locale: Locale
-): { value: string; label: string }[] {
-	const byKey = new Map<string, { value: string; label: string }>();
-	for (const name of [...DEFAULT_EXERCISES.map((e) => e.en), ...custom, ...logged]) {
+): ExerciseOption[] {
+	const byKey = new Map<string, ExerciseOption>();
+	const builtIns = [...DEFAULT_EXERCISES, ...GYM80_MACHINES].map((e) => e.en);
+	for (const name of [...builtIns, ...custom, ...logged]) {
 		const value = name.trim();
 		const key = value.toLowerCase();
-		if (key && !byKey.has(key)) byKey.set(key, { value, label: exerciseLabel(value, locale) });
+		if (key && !byKey.has(key))
+			byKey.set(key, {
+				value,
+				label: exerciseLabel(value, locale),
+				category: exerciseCategory(value),
+				group: machineGroup(value, locale)
+			});
 	}
 	return [...byKey.values()];
 }
