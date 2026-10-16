@@ -15,6 +15,7 @@
 		exerciseLabel,
 		exerciseHref,
 		LOG_EXERCISE_PARAM,
+		machineProductUrl,
 		subscribeToExercises
 	} from '#lib/firebase/exercises.js';
 	import {
@@ -52,6 +53,9 @@
 	// so the weight can be typed straight away.
 	let focusWeight = requested !== '';
 	let weightInput = $state<HTMLInputElement>();
+
+	// Set only while a built-in machine is picked.
+	const productUrl = $derived(machineProductUrl(exercise, i18n.locale));
 	let weight = $state<number | null>(null);
 	let reps = $state<number | null>(null);
 	// Kept after saving, so several sets can be backdated in a row.
@@ -267,6 +271,11 @@
 						options={exerciseOptions}
 						onAdd={handleAddExercise}
 					/>
+					{#if productUrl}
+						<a class="product-link" href={productUrl} target="_blank" rel="noopener noreferrer">
+							{t.viewOnGym80} <span aria-hidden="true">↗</span>
+						</a>
+					{/if}
 				</div>
 				<div class="field">
 					<div class="label-row">
@@ -417,6 +426,17 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
+	}
+
+	.product-link {
+		align-self: flex-start;
+		color: #4c8dff;
+		font-size: 0.85rem;
+		text-decoration: none;
+	}
+
+	.product-link:hover {
+		text-decoration: underline;
 	}
 
 	button.link {
