@@ -8,6 +8,7 @@
 	import { initAuth, setAuthLanguage } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
 	import { i18n } from '$lib/i18n.svelte';
+	import { initInstall } from '$lib/install.svelte';
 
 	let { children } = $props();
 
@@ -15,6 +16,8 @@
 	// signs in. initAuth() is idempotent.
 	onMount(() => {
 		if (isConfigured) initAuth();
+		// Early, so a beforeinstallprompt fired on another tab isn't missed.
+		initInstall();
 	});
 
 	// Keep <html lang> in step so screen readers and hyphenation use the right language.

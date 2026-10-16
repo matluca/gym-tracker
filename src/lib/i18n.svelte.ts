@@ -133,7 +133,15 @@ const en = {
 	personalBest: 'PB',
 	personalBestLong: 'Personal best',
 	setCount: (n: number) => (n === 1 ? '1 set' : `${n} sets`),
-	chartLabel: (exercise: string, metric: string) => `${metric} over time for ${exercise}`
+	chartLabel: (exercise: string, metric: string) => `${metric} over time for ${exercise}`,
+	installTitle: 'Install Gym Tracker',
+	installBody: 'Open it from your home screen like an app — full screen, and it works offline.',
+	installButton: 'Install',
+	// {share} is replaced by the Share icon and label.
+	installIosSteps: 'Tap {share} in Safari, then “Add to Home Screen”.',
+	installIosShare: 'Share',
+	installIosOther: 'To install it, open this page in Safari, tap Share, then “Add to Home Screen”.',
+	dismiss: 'Dismiss'
 };
 
 type Messages = typeof en;
@@ -261,7 +269,14 @@ const de: Messages = {
 	personalBest: 'PB',
 	personalBestLong: 'Persönliche Bestleistung',
 	setCount: (n: number) => (n === 1 ? '1 Satz' : `${n} Sätze`),
-	chartLabel: (exercise: string, metric: string) => `${metric} im Zeitverlauf für ${exercise}`
+	chartLabel: (exercise: string, metric: string) => `${metric} im Zeitverlauf für ${exercise}`,
+	installTitle: 'Gym Tracker installieren',
+	installBody: 'Öffne sie wie eine App vom Home-Bildschirm – im Vollbild und auch offline.',
+	installButton: 'Installieren',
+	installIosSteps: 'Tippe in Safari auf {share} und dann auf „Zum Home-Bildschirm“.',
+	installIosShare: 'Teilen',
+	installIosOther: 'Öffne diese Seite zum Installieren in Safari, tippe auf Teilen und dann auf „Zum Home-Bildschirm“.',
+	dismiss: 'Schließen'
 };
 
 const messages: Record<Locale, Messages> = { en, de };

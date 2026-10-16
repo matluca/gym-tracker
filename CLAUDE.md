@@ -132,6 +132,9 @@ changes nothing in the live project.
 
 - `/` — log a set, plus today's sets grouped by exercise (filtered client-side from the
   50-most-recent subscription). Exercise names link to their history page.
+  Also hosts the install hint (`InstallHint.svelte`, state in `src/lib/install.svelte.ts`):
+  an Install button where Chromium fires `beforeinstallprompt`, Share → Add to Home Screen
+  steps in iOS Safari (which has no install API), nothing once installed or dismissed.
 - `/history` — training days newest first, each listing exercises with set count and best
   set; tap a day to expand every set. Pages by `createdAt` (200 sets per "Load older") and
   hides the oldest, possibly-incomplete days — see `subscribeToHistory` for why the

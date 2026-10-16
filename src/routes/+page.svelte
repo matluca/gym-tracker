@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
+	import InstallHint from '$lib/components/InstallHint.svelte';
 	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
 	import { auth } from '$lib/firebase/auth.svelte';
 	import { isConfigured } from '$lib/firebase/client';
@@ -224,6 +225,8 @@
 	{:else if auth.loading}
 		<p class="muted">{t.signingIn}</p>
 	{:else}
+		<InstallHint />
+
 		<section class="card">
 			<h2>{t.logSet}</h2>
 			<form onsubmit={handleSubmit}>
