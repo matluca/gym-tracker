@@ -2,11 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
-	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
-	import ProgressChart from '$lib/components/ProgressChart.svelte';
-	import { toLocalDateString } from '$lib/dates';
-	import { auth } from '$lib/firebase/auth.svelte';
-	import { isConfigured } from '$lib/firebase/client';
+	import ExercisePicker from '#lib/components/ExercisePicker.svelte';
+	import ProgressChart from '#lib/components/ProgressChart.svelte';
+	import { toLocalDateString } from '#lib/dates.js';
+	import { auth } from '#lib/firebase/auth.svelte.js';
+	import { isConfigured } from '#lib/firebase/client.js';
 	import {
 		buildExerciseOptions,
 		exerciseHref,
@@ -14,13 +14,13 @@
 		getLastViewedExercise,
 		setLastViewedExercise,
 		subscribeToExercises
-	} from '$lib/firebase/exercises';
+	} from '#lib/firebase/exercises.js';
 	import {
 		subscribeToExerciseHistory,
 		subscribeToWorkouts,
 		type Workout
-	} from '$lib/firebase/workouts';
-	import { i18n } from '$lib/i18n.svelte';
+	} from '#lib/firebase/workouts.js';
+	import { i18n } from '#lib/i18n.svelte.js';
 	import {
 		e1rm,
 		metricValue,
@@ -28,7 +28,7 @@
 		roundHalf,
 		toSessions,
 		type Metric
-	} from '$lib/progress';
+	} from '#lib/progress.js';
 
 	const t = $derived(i18n.t);
 
@@ -37,7 +37,7 @@
 	const exercise = $derived(page.params.name ?? '');
 	const label = $derived(exerciseLabel(exercise, i18n.locale));
 
-	// Bare tab: reopen the last exercise viewed on this device. `replaceState`
+	// Bare tab: reopen the last exercise viewed on this device. `replace`
 	// so Back doesn't bounce between /exercise and /exercise/X.
 	$effect(() => {
 		if (exercise) {
@@ -45,7 +45,7 @@
 			return;
 		}
 		const last = getLastViewedExercise();
-		if (last) goto(exerciseHref(last), { replaceState: true });
+		if (last) goto(exerciseHref(last), { replace: true });
 	});
 
 	// Picker options: same sources as the Log tab, so every exercise you've
@@ -78,7 +78,7 @@
 		picked = exercise;
 	});
 	$effect(() => {
-		if (picked && picked !== exercise) goto(exerciseHref(picked), { keepFocus: true });
+		if (picked && picked !== exercise) goto(exerciseHref(picked), { reset: false });
 	});
 
 	let workouts = $state<Workout[]>([]);

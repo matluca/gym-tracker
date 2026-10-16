@@ -2,7 +2,7 @@
  * Pure helpers that turn a list of sets for one exercise into progression
  * data. No Firebase, no Svelte — just numbers.
  */
-import type { Workout } from '$lib/firebase/workouts';
+import type { Workout } from '#lib/firebase/workouts.js';
 
 export type Metric = 'e1rm' | 'weight' | 'volume';
 

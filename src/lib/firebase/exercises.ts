@@ -12,7 +12,7 @@ import { addDoc, collection, onSnapshot, serverTimestamp } from 'firebase/firest
 
 import { resolve } from '$app/paths';
 
-import type { Locale } from '$lib/i18n.svelte';
+import type { Locale } from '#lib/i18n.svelte.js';
 
 import { getFirebase } from './client';
 

@@ -1,26 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import ExercisePicker from '$lib/components/ExercisePicker.svelte';
-	import InstallHint from '$lib/components/InstallHint.svelte';
-	import { auth } from '$lib/firebase/auth.svelte';
-	import { isConfigured } from '$lib/firebase/client';
+	import ExercisePicker from '#lib/components/ExercisePicker.svelte';
+	import InstallHint from '#lib/components/InstallHint.svelte';
+	import { auth } from '#lib/firebase/auth.svelte.js';
+	import { isConfigured } from '#lib/firebase/client.js';
 	import {
 		addExercise,
 		buildExerciseOptions,
 		exerciseLabel,
 		exerciseHref,
 		subscribeToExercises
-	} from '$lib/firebase/exercises';
+	} from '#lib/firebase/exercises.js';
 	import {
 		addWorkout,
 		deleteWorkout,
 		subscribeToWorkouts,
 		type Workout
-	} from '$lib/firebase/workouts';
-	import { atCurrentTime, toLocalDateString } from '$lib/dates';
-	import { i18n } from '$lib/i18n.svelte';
-	import { byExercise } from '$lib/progress';
+	} from '#lib/firebase/workouts.js';
+	import { atCurrentTime, toLocalDateString } from '#lib/dates.js';
+	import { i18n } from '#lib/i18n.svelte.js';
+	import { byExercise } from '#lib/progress.js';
 
 	const t = $derived(i18n.t);
 

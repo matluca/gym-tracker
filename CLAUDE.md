@@ -33,16 +33,25 @@ emulator is the highest-value place to start — the rules carry real logic.
 
 ## Architecture
 
-A SvelteKit 2 / Svelte 5 app compiled to a static SPA, served by Firebase Hosting, with
+A SvelteKit 3 / Svelte 5 app compiled to a static SPA, served by Firebase Hosting, with
 Firestore for data and Firebase Auth (anonymous, upgradable to email + password) for identity. There is no server of ours at
 runtime. See `README.md` for first-time Firebase project setup.
 
 ### Config lives in `vite.config.ts`, not `svelte.config.js`
 
-This scaffold has **no `svelte.config.js`**. The current `sv` CLI passes `KitConfig`
-straight into the `sveltekit()` plugin, so the adapter, `serviceWorker`, `alias`, and every
-other kit option go inside `sveltekit({ … })` in `vite.config.ts`. Docs and older answers
-will tell you otherwise.
+SvelteKit 3 does not support `svelte.config.js` at all: the adapter, `serviceWorker` and
+every other option are top-level options of `sveltekit({ … })` in `vite.config.ts`.
+Docs and answers written for SvelteKit 2 will tell you otherwise.
+
+SvelteKit 3 renames several modules, and the old names are hard errors, not deprecations:
+
+- `$lib/…` → `#lib/…`, a Node subpath import declared in `package.json` `"imports"`.
+  Imports need the real extension as seen at runtime: `#lib/dates.js` for `dates.ts`,
+  `#lib/i18n.svelte.js` for `i18n.svelte.ts`, `#lib/components/X.svelte` for components.
+- `$service-worker` → `$app/manifest` (file lists), `$app/env` (`version`) and
+  `$app/service-worker` (typed `self`). `$app/environment` → `$app/env`.
+- `goto` options: `replaceState` → `replace`, `keepFocus`/`noScroll` → `reset: false`.
+- `tsconfig.json` extends `$app/tsconfig`; the service worker is its own TS project.
 
 Runes mode is force-enabled there for all non-`node_modules` files. Legacy Svelte syntax
 (`on:click`, `export let`, `$:`) will not work — use `onclick`, `$props()`, `$derived`.
@@ -75,12 +84,15 @@ touching startup code.
 
 ### Environment variables
 
-Config comes from `$env/static/public` with the `PUBLIC_` prefix, meaning values are
-**inlined into the client bundle at build time**. Consequences:
+Variables are declared in `src/env.ts` with `defineEnvVars` and imported from
+`$app/env/public`. They are `public: true, static: true`, meaning values are **inlined into
+the client bundle at build time** — a static SPA has no server to read them later.
+Consequences:
 
-- A variable imported from `$env/static/public` but missing from `.env` is a **build
-  failure**, not a runtime one. Adding an import means adding it to `.env` *and*
-  `.env.example`.
+- A declared variable missing from `.env` fails the build (no schema means "must be set,
+  may be blank"). Adding one means declaring it in `src/env.ts` *and* adding it to `.env`
+  and `.env.example`.
+- `$env/static/public` still works in SvelteKit 3 but is deprecated; don't add new uses.
 - Nothing secret can ever go in a `PUBLIC_` var. The Firebase web config is public by
   design — it identifies the project, it authorises nothing.
 
@@ -90,7 +102,7 @@ Do not conflate these:
 
 | Layer | Owns | Where |
 | --- | --- | --- |
-| Service worker | app shell, JS/CSS, icons | `src/service-worker.ts` |
+| Service worker | app shell, JS/CSS, icons | `src/service-worker/index.ts` |
 | Firestore `persistentLocalCache` | document reads, queued writes | `src/lib/firebase/client.ts` |
 
 **The service worker must never intercept cross-origin requests.** Firestore and Identity
@@ -98,12 +110,19 @@ Toolkit talk to `*.googleapis.com` and do their own offline queueing and stream 
 caching or proxying those breaks realtime listeners and the write queue. The `fetch`
 handler bails out on any non-same-origin URL and on non-GET — keep it that way.
 
-SvelteKit registers the worker automatically. `$service-worker` supplies the build manifest
-and a `version` that rotates the cache name each build; `activate` deletes every other
+SvelteKit bundles and registers the worker automatically (as a module worker).
+`$app/manifest` supplies the build's files and `$app/env` a `version` that rotates the cache
+name each build; `activate` deletes every other
 cache. The `fetch` handler serves cache-first **only for paths in the build manifest** (hashed,
 so always correct) and leaves everything else to the network uncached. Caching other
 same-origin GETs used to pin `vite dev` modules (`/src/...`, whose URLs don't change as
 you edit), so source edits vanished behind stale copies.
+
+The worker has its own `tsconfig.json` (extending `$app/tsconfig/service-worker`) and is
+excluded from the main one, so `svelte-check` doesn't see it; `npm run check` therefore also
+runs `tsc -p src/service-worker`. Manifest paths are relative to the base path, so the worker
+resolves them against its scope — `resolve()` from `$app/paths` is typed for routes and
+rejects file paths.
 
 Install uses `Promise.allSettled` rather than `cache.addAll` because in `vite dev`
 the built assets and the `index.html` fallback don't exist yet, and one 404 would abort

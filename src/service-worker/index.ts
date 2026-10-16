@@ -1,22 +1,24 @@
-/// <reference types="@sveltejs/kit" />
-/// <reference lib="webworker" />
-
 /**
- * SvelteKit registers this automatically (config.kit.serviceWorker.register
- * defaults to true). `$service-worker` hands us the exact build manifest for
- * this deploy, with a `version` that changes on every build — so the cache name
- * rotates and stale assets get evicted in `activate`.
+ * SvelteKit bundles and registers this automatically (as a module worker).
+ * `$app/manifest` lists the exact files of this deploy and `version` changes
+ * on every build — so the cache name rotates and stale assets get evicted in
+ * `activate`. Its own tsconfig.json gives `self` the service worker type.
  */
-import { build, files, version } from '$service-worker';
-
-const sw = self as unknown as ServiceWorkerGlobalScope;
+import { self as sw } from '$app/service-worker';
+import { version } from '$app/env';
+import { assets, immutable } from '$app/manifest';
 
 const CACHE = `gym-tracker-${version}`;
 
 /** The SPA shell that adapter-static emits. Every navigation resolves to this. */
 const FALLBACK = '/index.html';
 
-const PRECACHE = [...build, ...files, FALLBACK];
+// Manifest paths are relative to the base path, which is the worker's scope.
+// Resolving against it gives the absolute pathnames the fetch handler compares
+// against. (`resolve()` from $app/paths is typed for routes, not files.)
+const toPathname = (file: { path: string }) => new URL(file.path, sw.registration.scope).pathname;
+
+const PRECACHE = [...immutable.map(toPathname), ...assets.map(toPathname), FALLBACK];
 const PRECACHE_PATHS = new Set(PRECACHE);
 
 sw.addEventListener('install', (event) => {

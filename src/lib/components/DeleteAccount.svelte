@@ -6,8 +6,8 @@
 	 * allow the deletion). Anonymous users have no password, so they type a
 	 * confirmation word instead — for them it's "delete my data".
 	 */
-	import { auth, authErrorCode, deleteAccount } from '$lib/firebase/auth.svelte';
-	import { i18n } from '$lib/i18n.svelte';
+	import { auth, authErrorCode, deleteAccount } from '#lib/firebase/auth.svelte.js';
+	import { i18n } from '#lib/i18n.svelte.js';
 
 	let { onDeleted }: { onDeleted: (message: string) => void } = $props();
 

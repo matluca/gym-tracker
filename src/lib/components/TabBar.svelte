@@ -7,8 +7,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
-	import { auth } from '$lib/firebase/auth.svelte';
-	import { i18n } from '$lib/i18n.svelte';
+	import { auth } from '#lib/firebase/auth.svelte.js';
+	import { i18n } from '#lib/i18n.svelte.js';
 
 	const path = $derived(page.url.pathname);
 	const current = $derived(

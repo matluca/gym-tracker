@@ -5,8 +5,8 @@
 	 * Add to Home Screen steps in iOS Safari, and a pointer to Safari in other
 	 * iOS browsers. Hidden once installed or dismissed — see install.svelte.ts.
 	 */
-	import { i18n } from '$lib/i18n.svelte';
-	import { dismissInstallHint, installMode, promptInstall } from '$lib/install.svelte';
+	import { i18n } from '#lib/i18n.svelte.js';
+	import { dismissInstallHint, installMode, promptInstall } from '#lib/install.svelte.js';
 
 	const t = $derived(i18n.t);
 	const mode = $derived(installMode());

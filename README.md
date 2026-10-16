@@ -7,14 +7,16 @@ Firebase Hosting, with Firestore for data and Firebase Auth for identity.
 
 | Piece         | Choice                                                       |
 |---------------|--------------------------------------------------------------|
-| Framework     | SvelteKit 2 + Svelte 5 (runes), TypeScript                   |
+| Framework     | SvelteKit 3 + Svelte 5 (runes), TypeScript                   |
 | Build         | `@sveltejs/adapter-static` → SPA, no server at runtime       |
 | Hosting       | Firebase Hosting (static + catch-all rewrite)                |
 | Data          | Cloud Firestore, with the IndexedDB offline cache enabled    |
 | Auth          | Firebase Auth — anonymous by default, email + password opt-in |
-| Offline shell | Hand-rolled service worker via SvelteKit's `$service-worker` |
+| Offline shell | Hand-rolled service worker via SvelteKit's `$app/manifest`   |
 
 ## Setup
+
+Requires **Node 22.17+** (SvelteKit 3's minimum).
 
 ### 1. Create the Firebase project
 
@@ -90,7 +92,7 @@ and Auth emulators need a JRE on your PATH; the Hosting emulator does not.
 ```
 src/
   app.html                     shell: manifest link, theme-color, iOS meta
-  service-worker.ts            precache + offline navigation fallback
+  service-worker/index.ts      precache + offline navigation fallback
   routes/
     +layout.ts                 ssr = false, prerender = false → SPA mode
     +page.svelte               the whole app today

@@ -6,7 +6,7 @@
 	 * plain letters ("GB", "DE"). Each button keeps the language name as its
 	 * accessible label, since a flag alone means nothing to a screen reader.
 	 */
-	import { i18n, LOCALES, type Locale } from '$lib/i18n.svelte';
+	import { i18n, LOCALES, type Locale } from '#lib/i18n.svelte.js';
 
 	// Language names are written in their own language, so a user can find
 	// theirs whichever language is currently active.

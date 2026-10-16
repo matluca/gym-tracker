@@ -11,7 +11,7 @@
 	 * "Add …" option calls `onAdd`; the parent is expected to add it to `options`.
 	 * Without `onAdd` the picker is select-only: no "Add …" option.
 	 */
-	import { i18n } from '$lib/i18n.svelte';
+	import { i18n } from '#lib/i18n.svelte.js';
 
 	export type PickerOption = { value: string; label: string };
 

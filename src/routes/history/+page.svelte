@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 
-	import { auth } from '$lib/firebase/auth.svelte';
-	import { isConfigured } from '$lib/firebase/client';
-	import { exerciseHref, exerciseLabel } from '$lib/firebase/exercises';
-	import { deleteWorkout, subscribeToHistory, type HistoryWindow } from '$lib/firebase/workouts';
-	import { toLocalDateString } from '$lib/dates';
-	import { i18n } from '$lib/i18n.svelte';
-	import { bestSet, byExercise, toSessions } from '$lib/progress';
+	import { auth } from '#lib/firebase/auth.svelte.js';
+	import { isConfigured } from '#lib/firebase/client.js';
+	import { exerciseHref, exerciseLabel } from '#lib/firebase/exercises.js';
+	import { deleteWorkout, subscribeToHistory, type HistoryWindow } from '#lib/firebase/workouts.js';
+	import { toLocalDateString } from '#lib/dates.js';
+	import { i18n } from '#lib/i18n.svelte.js';
+	import { bestSet, byExercise, toSessions } from '#lib/progress.js';
 
 	/** Sets fetched per "Load older" — roughly a month of normal training. */
 	const PAGE = 200;

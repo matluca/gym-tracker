@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 
-	import DeleteAccount from '$lib/components/DeleteAccount.svelte';
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
+	import DeleteAccount from '#lib/components/DeleteAccount.svelte';
+	import LocaleSwitcher from '#lib/components/LocaleSwitcher.svelte';
 	import {
 		auth,
 		authErrorCode,
@@ -12,9 +12,9 @@
 		resetPassword,
 		signIn,
 		signOutUser
-	} from '$lib/firebase/auth.svelte';
-	import { isConfigured } from '$lib/firebase/client';
-	import { i18n } from '$lib/i18n.svelte';
+	} from '#lib/firebase/auth.svelte.js';
+	import { isConfigured } from '#lib/firebase/client.js';
+	import { i18n } from '#lib/i18n.svelte.js';
 
 	const t = $derived(i18n.t);
 

@@ -11,7 +11,7 @@
 	 * a new Firebase product, or another stored field, update both languages
 	 * and `LAST_UPDATED` below.
 	 */
-	import { i18n } from '$lib/i18n.svelte';
+	import { i18n } from '#lib/i18n.svelte.js';
 
 	const t = $derived(i18n.t);
 	const de = $derived(i18n.locale === 'de');

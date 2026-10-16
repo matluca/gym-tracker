@@ -4,11 +4,11 @@
 	// install prompt reads.
 	import { onMount } from 'svelte';
 
-	import TabBar from '$lib/components/TabBar.svelte';
-	import { initAuth, setAuthLanguage } from '$lib/firebase/auth.svelte';
-	import { isConfigured } from '$lib/firebase/client';
-	import { i18n } from '$lib/i18n.svelte';
-	import { initInstall } from '$lib/install.svelte';
+	import TabBar from '#lib/components/TabBar.svelte';
+	import { initAuth, setAuthLanguage } from '#lib/firebase/auth.svelte.js';
+	import { isConfigured } from '#lib/firebase/client.js';
+	import { i18n } from '#lib/i18n.svelte.js';
+	import { initInstall } from '#lib/install.svelte.js';
 
 	let { children } = $props();
 

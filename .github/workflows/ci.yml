@@ -20,16 +20,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - run: npm ci
 
-      # $env/static/public imports fail the build if a variable is missing.
+      # Variables declared in src/env.ts fail the build if missing from .env.
       # The blank placeholders are enough: the app treats them as "not
       # configured" instead of connecting to Firebase.
       - run: cp .env.example .env
