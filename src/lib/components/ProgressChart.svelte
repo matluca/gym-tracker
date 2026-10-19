@@ -47,7 +47,7 @@
 		let lo = Math.min(...values);
 		let hi = Math.max(...values);
 		if (lo === hi) {
-			lo -= Math.max(1, lo * 0.05);
+			lo = Math.max(0, lo - Math.max(1, lo * 0.05));
 			hi += Math.max(1, hi * 0.05);
 		}
 		const raw = (hi - lo) / 4;

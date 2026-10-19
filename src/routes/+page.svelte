@@ -85,7 +85,7 @@
 	const canSubmit = $derived(
 		exercise.trim().length > 0 &&
 			weight !== null &&
-			weight > 0 &&
+			weight >= 0 &&
 			date !== '' &&
 			date <= today &&
 			reps !== null &&
