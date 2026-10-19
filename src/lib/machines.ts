@@ -22,9 +22,10 @@ export type MachineGroup = {
 /**
  * Built-in machines: gym80's strength range, which is what McFIT studios are
  * fitted with. Taken from the gym80 catalogue (gym80.de, October 2026):
- * SYGNUM (weight stack), PURE KRAFT (plate loaded) and the 80ATHLETICS
- * machines. Left out are multi-user towers, combo and Cable Art units, racks
- * and accessories — nothing you'd log a set "on".
+ * SYGNUM (weight stack), PURE KRAFT (plate loaded), the BASIC benches and
+ * machines, and the 80ATHLETICS machines. Left out are multi-user towers,
+ * combo and Cable Art units, racks and accessories — nothing you'd log a set
+ * "on".
  *
  * `de` is gym80's own name, so it matches the label on the machine. Like
  * exercises, the English name is the value stored in workout documents and
@@ -482,6 +483,52 @@ export const GYM80_MACHINE_GROUPS: readonly MachineGroup[] = [
 				de: 'Seithebemaschine vorgebeugt'
 			},
 			{ id: '80a00033', en: 'Sliding hip extension', de: 'Sliding Hip Extension' }
+		]
+	},
+	{
+		key: 'basic-core',
+		line: 'BASIC',
+		en: 'Core',
+		de: 'Rumpf',
+		machines: [
+			{ id: '4027', en: 'Basic abdominal bench', de: 'Basic Bauchmuskelbank' },
+			{ id: '4046', en: 'Basic abdominal flexor', de: 'Basic Beinhebegerät' },
+			{
+				id: '4031',
+				en: 'Basic abdominal flexor with chinning bar',
+				de: 'Basic Beinhebegerät mit Klimmzugstange'
+			}
+		]
+	},
+	{
+		key: 'basic-chest',
+		line: 'BASIC',
+		en: 'Chest',
+		de: 'Brust',
+		machines: [
+			{ id: '4097', en: 'Basic press bench', de: 'Basic Drückbank' },
+			{ id: '4103', en: 'Basic press bench adjustable', de: 'Basic Drückbank verstellbar' },
+			{ id: '4005', en: 'Basic flat bench', de: 'Basic Flachbank' },
+			{ id: '4107', en: 'Basic decline bench', de: 'Basic Negativbank' }
+		]
+	},
+	{
+		key: 'basic-back',
+		line: 'BASIC',
+		en: 'Back',
+		de: 'Rücken',
+		machines: [
+			{ id: '4165', en: 'Basic Roman chair adjustable', de: 'Basic Roman Chair verstellbar' }
+		]
+	},
+	{
+		key: 'basic-benches',
+		line: 'BASIC',
+		en: 'Multi-purpose benches',
+		de: 'Mehrzweckbänke',
+		machines: [
+			{ id: '4010', en: 'Basic multi position bench', de: 'Basic Universalbank' },
+			{ id: '4112', en: 'Basic multi position bench light', de: 'Basic Universalbank leicht' }
 		]
 	}
 ];
