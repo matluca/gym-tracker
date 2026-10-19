@@ -22,6 +22,8 @@
 		label: string;
 		category?: 'exercise' | 'machine';
 		group?: { key: string; label: string; rank: number };
+		/** Extra text to match and show, e.g. a machine's gym80 article number. */
+		code?: string;
 	};
 
 	let {
@@ -76,6 +78,7 @@
 		return (
 			options.find((o) => o.label.toLowerCase() === q) ??
 			options.find((o) => o.value.toLowerCase() === q) ??
+			options.find((o) => o.code?.toLowerCase() === q) ??
 			null
 		);
 	});
@@ -90,14 +93,17 @@
 		const collator = new Intl.Collator(i18n.locale);
 		const rank = (o: PickerOption) => {
 			const label = o.label.toLowerCase();
-			if (label.startsWith(q)) return 0;
+			if (o.code?.toLowerCase().startsWith(q) || label.startsWith(q)) return 0;
 			if (label.includes(q)) return 1;
 			return 2; // matched only on the stored (English) value
 		};
 		const matches = q
 			? options
 					.filter(
-						(o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+						(o) =>
+							o.label.toLowerCase().includes(q) ||
+							o.value.toLowerCase().includes(q) ||
+							(o.code?.toLowerCase().includes(q) ?? false)
 					)
 					.sort(
 						(a, b) =>
@@ -331,6 +337,9 @@
 									+ {i18n.t.pickerAdd(item.name)}
 								{:else}
 									{item.option.label}
+									{#if item.option.code}
+										<span class="code">{item.option.code}</span>
+									{/if}
 								{/if}
 							</li>
 						{/each}
@@ -449,6 +458,13 @@
 	li.add {
 		color: #4c8dff;
 		font-weight: 600;
+	}
+
+	.code {
+		margin-left: 0.5rem;
+		color: #78818c;
+		font-size: 0.8rem;
+		font-variant-numeric: tabular-nums;
 	}
 
 	li.empty {

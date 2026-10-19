@@ -84,6 +84,11 @@ export function machineGroup(value: string, locale: Locale): OptionGroup | undef
 	return { key: found.group.key, label: groupLabel(found.group, locale), rank: found.rank };
 }
 
+/** gym80 article number for a stored machine value; undefined for exercises. */
+export function machineCode(value: string): string | undefined {
+	return groupByMachine.get(value.toLowerCase())?.machine.id;
+}
+
 /** gym80 catalogue page for a stored machine value; undefined for exercises. */
 export function machineProductUrl(value: string, locale: Locale): string | undefined {
 	const found = groupByMachine.get(value.toLowerCase());
@@ -117,6 +122,8 @@ export type ExerciseOption = {
 	label: string;
 	category: ExerciseCategory;
 	group?: OptionGroup;
+	/** gym80 article number, for machines. */
+	code?: string;
 };
 
 /**
@@ -140,7 +147,8 @@ export function buildExerciseOptions(
 				value,
 				label: exerciseLabel(value, locale),
 				category: exerciseCategory(value),
-				group: machineGroup(value, locale)
+				group: machineGroup(value, locale),
+				code: machineCode(value)
 			});
 	}
 	return [...byKey.values()];
