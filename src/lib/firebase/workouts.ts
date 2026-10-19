@@ -18,6 +18,7 @@ import {
 	query,
 	serverTimestamp,
 	Timestamp,
+	updateDoc,
 	where,
 	type QuerySnapshot
 } from 'firebase/firestore';
@@ -167,6 +168,23 @@ export async function addWorkout(uid: string, workout: NewWorkout): Promise<void
 		...workout,
 		performedAt: Timestamp.fromDate(workout.performedAt),
 		createdAt: serverTimestamp()
+	});
+}
+
+/**
+ * Change what a set was: exercise, weight and reps. Logged and performed
+ * times are left as they were, which the rules enforce as well.
+ */
+export async function updateWorkout(
+	uid: string,
+	workoutId: string,
+	changes: Pick<NewWorkout, 'exercise' | 'weight' | 'reps'>
+): Promise<void> {
+	const { db } = getFirebase();
+	await updateDoc(doc(db, 'users', uid, 'workouts', workoutId), {
+		exercise: changes.exercise,
+		weight: changes.weight,
+		reps: changes.reps
 	});
 }
 

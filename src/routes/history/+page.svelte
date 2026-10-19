@@ -1,10 +1,21 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 
+	import SetEditor from '#lib/components/SetEditor.svelte';
 	import { auth } from '#lib/firebase/auth.svelte.js';
 	import { isConfigured } from '#lib/firebase/client.js';
-	import { exerciseHref, exerciseLabel } from '#lib/firebase/exercises.js';
-	import { deleteWorkout, subscribeToHistory, type HistoryWindow } from '#lib/firebase/workouts.js';
+	import {
+		buildExerciseOptions,
+		exerciseHref,
+		exerciseLabel,
+		subscribeToExercises
+	} from '#lib/firebase/exercises.js';
+	import {
+		deleteWorkout,
+		subscribeToHistory,
+		type HistoryWindow,
+		type Workout
+	} from '#lib/firebase/workouts.js';
 	import { toLocalDateString } from '#lib/dates.js';
 	import { i18n } from '#lib/i18n.svelte.js';
 	import { bestSet, byExercise, toSessions } from '#lib/progress.js';
@@ -19,6 +30,18 @@
 	let loadingMore = $state(false);
 	let error = $state<string | null>(null);
 	const expanded = new SvelteSet<string>();
+	let editingId = $state<string | null>(null);
+	let customExercises = $state<string[]>([]);
+
+	$effect(() => {
+		const uid = auth.user?.uid;
+		if (!uid) return;
+		return subscribeToExercises(
+			uid,
+			(names) => (customExercises = names),
+			() => {}
+		);
+	});
 
 	$effect(() => {
 		const uid = auth.user?.uid;
@@ -51,6 +74,18 @@
 	});
 
 	const hasMore = $derived(history?.completeFrom != null);
+
+	const exerciseOptions = $derived(
+		buildExerciseOptions(
+			customExercises,
+			history?.workouts.map((w) => w.exercise) ?? [],
+			i18n.locale
+		)
+	);
+
+	function startEdit(workout: Workout) {
+		editingId = workout.id;
+	}
 
 	const dayFormat = $derived(
 		new Intl.DateTimeFormat(i18n.locale, {
@@ -148,19 +183,37 @@
 									{#if open}
 										<ul class="sets">
 											{#each group.sets as set (set.id)}
-												<li>
-													<span class="set-main">{number.format(set.weight)} kg × {set.reps}</span>
-													<time class="set-time">
-														{set.date ? timeFormat.format(set.date) : t.syncing}
-													</time>
-													<button
-														type="button"
-														class="delete"
-														onclick={() => handleDelete(set.id)}
-														aria-label={t.deleteSet(name)}
-													>
-														{t.delete}
-													</button>
+												<li class:editing={editingId === set.id}>
+													{#if editingId === set.id}
+														{#key set.id}
+															<SetEditor
+																workout={set}
+																options={exerciseOptions}
+																onDone={() => (editingId = null)}
+															/>
+														{/key}
+													{:else}
+														<span class="set-main">{number.format(set.weight)} kg × {set.reps}</span>
+														<time class="set-time">
+															{set.date ? timeFormat.format(set.date) : t.syncing}
+														</time>
+														<button
+															type="button"
+															class="edit"
+															onclick={() => startEdit(set)}
+															aria-label={t.editSet(name)}
+														>
+															{t.edit}
+														</button>
+														<button
+															type="button"
+															class="delete"
+															onclick={() => handleDelete(set.id)}
+															aria-label={t.deleteSet(name)}
+														>
+															{t.delete}
+														</button>
+													{/if}
 												</li>
 											{/each}
 										</ul>
@@ -332,6 +385,21 @@
 		margin-left: auto;
 		font-size: 0.75rem;
 		color: #78818c;
+	}
+
+	.sets li.editing {
+		display: block;
+	}
+
+	.edit {
+		background: transparent;
+		color: #4c8dff;
+		border: 1px solid #243454;
+		border-radius: 0.5rem;
+		padding: 0.3rem 0.55rem;
+		font-size: 0.8rem;
+		font-family: inherit;
+		cursor: pointer;
 	}
 
 	.delete {

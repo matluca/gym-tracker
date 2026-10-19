@@ -15,6 +15,11 @@ service cloud.firestore {
       // compromised client can't stuff arbitrary payloads into the collection.
       function isValidWorkout() {
         let data = request.resource.data;
+        return hasValidFields(data)
+          && data.createdAt == request.time;
+      }
+
+      function hasValidFields(data) {
         return data.keys().hasOnly(['exercise', 'weight', 'reps', 'performedAt', 'createdAt'])
           && data.keys().hasAll(['exercise', 'weight', 'reps', 'createdAt'])
           && data.exercise is string
@@ -26,7 +31,6 @@ service cloud.firestore {
           && data.reps is int
           && data.reps > 0
           && data.reps <= 1000
-          && data.createdAt == request.time
           && isValidPerformedAt(data);
       }
 
@@ -40,13 +44,19 @@ service cloud.firestore {
             && data.performedAt >= timestamp.date(2000, 1, 1));
       }
 
+      // An edit may change what was done (exercise, weight, reps) but not when
+      // it was logged or performed: `createdAt` and `performedAt` are pinned to
+      // the stored values, and the document must still be a valid workout.
+      function isValidEdit() {
+        let before = resource.data;
+        return hasValidFields(request.resource.data)
+          && request.resource.data.createdAt == before.createdAt
+          && request.resource.data.get('performedAt', null) == before.get('performedAt', null);
+      }
+
       allow read, delete: if isOwner();
       allow create: if isOwner() && isValidWorkout();
-
-      // No update path in the app today. Add one deliberately rather than
-      // leaving the door open — an edit rule also has to pin `createdAt` so a
-      // client can't rewrite history.
-      allow update: if false;
+      allow update: if isOwner() && isValidEdit();
     }
 
     // Custom exercises a user has added to their picker. The built-in list

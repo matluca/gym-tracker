@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 
 	import ExercisePicker from '#lib/components/ExercisePicker.svelte';
+	import SetEditor from '#lib/components/SetEditor.svelte';
 	import InstallHint from '#lib/components/InstallHint.svelte';
 	import { auth } from '#lib/firebase/auth.svelte.js';
 	import { isConfigured } from '#lib/firebase/client.js';
@@ -31,6 +32,7 @@
 	const t = $derived(i18n.t);
 
 	let workouts = $state<Workout[]>([]);
+	let editingId = $state<string | null>(null);
 	let customExercises = $state<string[]>([]);
 	let listError = $state<string | null>(null);
 	let saveError = $state<string | null>(null);
@@ -332,16 +334,33 @@
 							</div>
 							<ul class="workouts">
 								{#each group.sets as workout (workout.id)}
-									<li>
-										<span class="detail">{workout.weight} kg × {workout.reps}</span>
-										<time>{formatTime(workout.date)}</time>
-										<button
-											class="delete"
-											onclick={() => handleDelete(workout.id)}
-											aria-label={t.deleteSet(name)}
-										>
-											{t.delete}
-										</button>
+									<li class:editing={editingId === workout.id}>
+										{#if editingId === workout.id}
+											{#key workout.id}
+												<SetEditor
+													{workout}
+													options={exerciseOptions}
+													onDone={() => (editingId = null)}
+												/>
+											{/key}
+										{:else}
+											<span class="detail">{workout.weight} kg × {workout.reps}</span>
+											<time>{formatTime(workout.date)}</time>
+											<button
+												class="edit"
+												onclick={() => (editingId = workout.id)}
+												aria-label={t.editSet(name)}
+											>
+												{t.edit}
+											</button>
+											<button
+												class="delete"
+												onclick={() => handleDelete(workout.id)}
+												aria-label={t.deleteSet(name)}
+											>
+												{t.delete}
+											</button>
+										{/if}
 									</li>
 								{/each}
 							</ul>
@@ -530,6 +549,19 @@
 		background: #0f1115;
 		border: 1px solid #252a33;
 		border-radius: 0.5rem;
+	}
+
+	.workouts li.editing {
+		display: block;
+	}
+
+	.edit {
+		background: transparent;
+		color: #4c8dff;
+		border: 1px solid #243454;
+		padding: 0.35rem 0.6rem;
+		font-size: 0.8rem;
+		font-weight: 500;
 	}
 
 	.exercise {
