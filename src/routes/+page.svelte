@@ -65,13 +65,11 @@
 	let today = $state(toLocalDateString(new Date()));
 	const isToday = $derived(date === today);
 
-	// Today's sets grouped by exercise, in the order you trained them. Filtered
-	// from the recent-sets subscription (50 most recently entered), which covers
-	// a day's training without a second listener.
+	// Today's sets grouped by exercise, most recent first. Filtered from the
+	// recent-sets subscription (50 most recently entered, newest first), which
+	// covers a day's training without a second listener.
 	const todaysGroups = $derived(
-		byExercise(
-			workouts.filter((w) => toLocalDateString(w.date ?? new Date()) === today).reverse() // subscription is newest first
-		)
+		byExercise(workouts.filter((w) => toLocalDateString(w.date ?? new Date()) === today))
 	);
 
 	const exerciseOptions = $derived(
