@@ -9,6 +9,7 @@
 	import { isConfigured } from '#lib/firebase/client.js';
 	import {
 		buildExerciseOptions,
+		recentExercises,
 		exerciseHref,
 		exerciseLabel,
 		getLastViewedExercise,
@@ -157,7 +158,12 @@
 	{#if isConfigured && !auth.loading && !auth.error}
 		<div class="pick">
 			<label for="progress-exercise" class="visually-hidden">{t.exercise}</label>
-			<ExercisePicker id="progress-exercise" bind:value={picked} {options} />
+			<ExercisePicker
+				id="progress-exercise"
+				bind:value={picked}
+				{options}
+				recent={recentExercises(recent, exercise)}
+			/>
 			{#if exercise}
 				<div class="actions">
 					<a class="log-link" href={logSetHref(exercise)}>{t.logSet}</a>

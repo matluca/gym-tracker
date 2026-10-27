@@ -14,6 +14,10 @@
 	 * Options with a `category` are listed under a heading per category, machines
 	 * first; options with a `group` also get a sub-heading per group, ordered by
 	 * its `rank`.
+	 *
+	 * `recent` values (newest first) are repeated under a "Recent" heading at the
+	 * top while the list is unfiltered; once the user types, normal matching
+	 * applies. They also stay in their usual section, so nothing moves.
 	 */
 	import { i18n } from '#lib/i18n.svelte.js';
 
@@ -30,15 +34,19 @@
 		value = $bindable(''),
 		options,
 		onAdd,
+		recent = [],
 		id = 'exercise-picker'
 	}: {
 		value?: string;
 		options: PickerOption[];
+		recent?: string[];
 		onAdd?: (name: string) => void;
 		id?: string;
 	} = $props();
 
-	type Item = { kind: 'option'; option: PickerOption } | { kind: 'add'; name: string };
+	type Item =
+		| { kind: 'option'; option: PickerOption; recent?: true }
+		| { kind: 'add'; name: string };
 
 	const CATEGORY_ORDER = ['machine', 'exercise'] as const;
 	const categoryRank = (o: PickerOption) => (o.category ? CATEGORY_ORDER.indexOf(o.category) : 0);
@@ -111,7 +119,15 @@
 					)
 			: [...options].sort((a, b) => sectionOrder(a, b) || collator.compare(a.label, b.label));
 
-		const list: Item[] = matches.map((option) => ({ kind: 'option', option }));
+		const list: Item[] = [];
+		if (!q) {
+			for (const v of recent) {
+				// Case-insensitive: options keep one spelling per name, logged sets may differ.
+				const option = options.find((o) => o.value.toLowerCase() === v.trim().toLowerCase());
+				if (option) list.push({ kind: 'option', option, recent: true });
+			}
+		}
+		for (const option of matches) list.push({ kind: 'option', option });
 		if (onAdd && filtering && query && !exactMatch) list.push({ kind: 'add', name: query });
 		return list;
 	});
@@ -127,22 +143,25 @@
 	// `items` split into consecutive runs by category and group, for rendering.
 	// Indexes stay global so keyboard navigation can ignore the grouping.
 	const sections = $derived.by(() => {
+		const headings: Record<string, string> = {
+			recent: i18n.t.pickerRecent,
+			machine: i18n.t.pickerMachines,
+			exercise: i18n.t.pickerExercises
+		};
 		const out: Section[] = [];
 		let lastCategory: string | null = null;
 		items.forEach((item, index) => {
-			const category = item.kind === 'add' ? 'add' : (item.option.category ?? 'none');
-			const group = item.kind === 'option' ? item.option.group : undefined;
+			const category =
+				item.kind === 'add'
+					? 'add'
+					: item.recent
+						? 'recent'
+						: (item.option.category ?? 'none');
+			const group = item.kind === 'option' && !item.recent ? item.option.group : undefined;
 			const key = group ? `${category}-${group.key}` : category;
 			let section = out.at(-1);
 			if (section?.key !== key) {
-				const heading =
-					category === lastCategory
-						? null
-						: category === 'machine'
-							? i18n.t.pickerMachines
-							: category === 'exercise'
-								? i18n.t.pickerExercises
-								: null;
+				const heading = category === lastCategory ? null : (headings[category] ?? null);
 				section = { key, heading, subheading: group?.label ?? null, entries: [] };
 				out.push(section);
 				lastCategory = category;
@@ -183,6 +202,13 @@
 		if (open) return;
 		open = true;
 		filtering = false;
+		// With recent exercises listed, open at the top so they're in view and
+		// the arrow keys start from them.
+		if (items.some((i) => i.kind === 'option' && i.recent)) {
+			activeIndex = -1;
+			requestAnimationFrame(() => listEl?.scrollTo({ top: 0 }));
+			return;
+		}
 		const current = items.findIndex((i) => i.kind === 'option' && i.option.value === value);
 		activeIndex = current;
 		if (current >= 0) {
@@ -320,7 +346,7 @@
 						aria-label={section.subheading ? undefined : (section.heading ?? undefined)}
 						aria-labelledby={section.subheading ? `${id}-group-${section.key}` : undefined}
 					>
-						{#each section.entries as { item, index } (item.kind === 'add' ? 'add' : 'opt:' + item.option.value)}
+						{#each section.entries as { item, index } (item.kind === 'add' ? 'add' : (item.recent ? 'recent:' : 'opt:') + item.option.value)}
 							<!-- Focus never leaves the input; keyboard handling lives there. -->
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<li

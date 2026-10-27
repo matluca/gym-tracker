@@ -22,6 +22,7 @@ import {
 } from '#lib/machines.js';
 
 import { getFirebase } from './client';
+import type { Workout } from './workouts';
 
 /**
  * Built-in exercises. The English name is the canonical value written to
@@ -152,6 +153,27 @@ export function buildExerciseOptions(
 			});
 	}
 	return [...byKey.values()];
+}
+
+/**
+ * The `count` most recently logged distinct exercises, newest first, leaving
+ * out `exclude` (the current selection). Ordered by entry time (`createdAt`),
+ * not training date, so backdating a set doesn't push out what you're doing
+ * now; a set still waiting for its server timestamp counts as the newest.
+ */
+export function recentExercises(workouts: Workout[], exclude: string, count = 3): string[] {
+	const entered = (w: Workout) => w.createdAt?.getTime() ?? Infinity;
+	const skip = exclude.trim().toLowerCase();
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const w of [...workouts].sort((a, b) => entered(b) - entered(a))) {
+		const key = w.exercise.trim().toLowerCase();
+		if (!key || key === skip || seen.has(key)) continue;
+		seen.add(key);
+		out.push(w.exercise);
+		if (out.length === count) break;
+	}
+	return out;
 }
 
 const LAST_VIEWED_KEY = 'lastViewedExercise';

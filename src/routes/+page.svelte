@@ -13,6 +13,7 @@
 	import {
 		addExercise,
 		buildExerciseOptions,
+		recentExercises,
 		exerciseLabel,
 		exerciseHref,
 		LOG_EXERCISE_PARAM,
@@ -269,6 +270,7 @@
 						id="exercise"
 						bind:value={exercise}
 						options={exerciseOptions}
+						recent={recentExercises(workouts, exercise)}
 						onAdd={handleAddExercise}
 					/>
 					{#if productUrl}
