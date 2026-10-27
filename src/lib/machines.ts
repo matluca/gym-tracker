@@ -25,7 +25,8 @@ export type MachineGroup = {
  * SYGNUM (weight stack), PURE KRAFT (plate loaded), the BASIC benches and
  * machines, and the 80ATHLETICS machines. Left out are multi-user towers,
  * combo and Cable Art units, racks and accessories — nothing you'd log a set
- * "on".
+ * "on". gym80 files the BASIC range under "Accessories & Essentials", but its
+ * benches and stations are trained on, so they are included.
  *
  * `de` is gym80's own name, so it matches the label on the machine. Like
  * exercises, the English name is the value stored in workout documents and
@@ -492,6 +493,14 @@ export const GYM80_MACHINE_GROUPS: readonly MachineGroup[] = [
 		de: 'Rumpf',
 		machines: [
 			{ id: '4027', en: 'Basic abdominal bench', de: 'Basic Bauchmuskelbank' },
+			{ id: '4028', en: 'Basic Roman chair', de: 'Basic Roman Chair' },
+			// An abdominal bench despite the name; see 4847 for the press bench.
+			{ id: '4107', en: 'Basic decline bench', de: 'Basic Negativbank' },
+			{
+				id: '4007',
+				en: 'Basic negative bench with double roll',
+				de: 'Basic Negativbank mit Doppelrolle'
+			},
 			{ id: '4046', en: 'Basic abdominal flexor', de: 'Basic Beinhebegerät' },
 			{
 				id: '4031',
@@ -508,8 +517,11 @@ export const GYM80_MACHINE_GROUPS: readonly MachineGroup[] = [
 		machines: [
 			{ id: '4097', en: 'Basic press bench', de: 'Basic Drückbank' },
 			{ id: '4103', en: 'Basic press bench adjustable', de: 'Basic Drückbank verstellbar' },
+			{ id: '4096', en: 'Basic incline bench', de: 'Basic Schrägbank' },
 			{ id: '4005', en: 'Basic flat bench', de: 'Basic Flachbank' },
-			{ id: '4107', en: 'Basic decline bench', de: 'Basic Negativbank' }
+			// gym80 calls this "Basic decline bench" too; renamed here to tell it
+			// apart from 4107, the abdominal decline bench.
+			{ id: '4847', en: 'Basic decline press bench', de: 'Basic Negativdrückbank' }
 		]
 	},
 	{
@@ -518,7 +530,20 @@ export const GYM80_MACHINE_GROUPS: readonly MachineGroup[] = [
 		en: 'Back',
 		de: 'Rücken',
 		machines: [
-			{ id: '4165', en: 'Basic Roman chair adjustable', de: 'Basic Roman Chair verstellbar' }
+			{ id: '4165', en: 'Basic Roman chair adjustable', de: 'Basic Roman Chair verstellbar' },
+			{ id: '4119', en: 'Basic 45° back extension', de: 'Basic 45-Grad Rückenstrecker' },
+			{ id: '4370', en: 'Basic dumbbell row bench', de: 'Basic Dumbbell Row Bench' }
+		]
+	},
+	{
+		key: 'basic-arms',
+		line: 'BASIC',
+		en: 'Arms',
+		de: 'Arme',
+		machines: [
+			{ id: '4093', en: 'Basic seated Scott curl', de: 'Basic Scott Curl sitzend' },
+			{ id: '4019', en: 'Basic standing Scott curl', de: 'Basic Scott Curler stehend' },
+			{ id: '4021', en: 'Basic dip station', de: 'Basic Barren' }
 		]
 	},
 	{
@@ -528,6 +553,11 @@ export const GYM80_MACHINE_GROUPS: readonly MachineGroup[] = [
 		de: 'Mehrzweckbänke',
 		machines: [
 			{ id: '4010', en: 'Basic multi position bench', de: 'Basic Universalbank' },
+			{
+				id: '4011',
+				en: 'Basic multi position bench with footrest',
+				de: 'Basic Universalbank mit Fußablage'
+			},
 			{ id: '4112', en: 'Basic multi position bench light', de: 'Basic Universalbank leicht' }
 		]
 	}
