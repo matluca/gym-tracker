@@ -20,7 +20,7 @@ export const TIME_FORMATS = ['auto', '12', '24'] as const;
 export type TimeFormat = (typeof TIME_FORMATS)[number];
 
 const en = {
-	appTitle: 'Gym Tracker',
+	appTitle: 'PuspFit',
 	appDescription: 'A simple offline-capable workout log.',
 	language: 'Language',
 	timeFormat: 'Time format',
@@ -150,7 +150,7 @@ const en = {
 	personalBestLong: 'Personal best',
 	setCount: (n: number) => (n === 1 ? '1 set' : `${n} sets`),
 	chartLabel: (exercise: string, metric: string) => `${metric} over time for ${exercise}`,
-	installTitle: 'Install Gym Tracker',
+	installTitle: 'Install PuspFit',
 	installBody: 'Open it from your home screen like an app — full screen, and it works offline.',
 	installButton: 'Install',
 	// {share} is replaced by the Share icon and label.
@@ -163,7 +163,7 @@ const en = {
 type Messages = typeof en;
 
 const de: Messages = {
-	appTitle: 'Gym Tracker',
+	appTitle: 'PuspFit',
 	appDescription: 'Ein einfaches, offline-fähiges Trainingstagebuch.',
 	language: 'Sprache',
 	timeFormat: 'Uhrzeitformat',
@@ -295,7 +295,7 @@ const de: Messages = {
 	personalBestLong: 'Persönliche Bestleistung',
 	setCount: (n: number) => (n === 1 ? '1 Satz' : `${n} Sätze`),
 	chartLabel: (exercise: string, metric: string) => `${metric} im Zeitverlauf für ${exercise}`,
-	installTitle: 'Gym Tracker installieren',
+	installTitle: 'PuspFit installieren',
 	installBody: 'Öffne sie wie eine App vom Home-Bildschirm – im Vollbild und auch offline.',
 	installButton: 'Installieren',
 	installIosSteps: 'Tippe in Safari auf {share} und dann auf „Zum Home-Bildschirm“.',

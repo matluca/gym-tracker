@@ -1,4 +1,4 @@
-# Gym Tracker
+# PuspFit
 
 An offline-capable PWA workout log. SvelteKit compiled to a static bundle, served by
 Firebase Hosting, with Firestore for data and Firebase Auth for identity.

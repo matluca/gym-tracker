@@ -41,7 +41,7 @@
 
 			<h2>1. Überblick</h2>
 			<p>
-				Gym Tracker ist ein Trainingstagebuch. Wir verarbeiten nur die Daten, die für diese Funktion
+				PuspFit ist ein Trainingstagebuch. Wir verarbeiten nur die Daten, die für diese Funktion
 				nötig sind. Es gibt keine Werbung, kein Tracking, keine Analyse-Tools und keine Weitergabe
 				zu Marketingzwecken.
 			</p>
@@ -185,7 +185,7 @@
 
 			<h2>1. Overview</h2>
 			<p>
-				Gym Tracker is a workout log. We only process the data needed for that. There is no
+				PuspFit is a workout log. We only process the data needed for that. There is no
 				advertising, no tracking, no analytics, and no sharing of data for marketing.
 			</p>
 

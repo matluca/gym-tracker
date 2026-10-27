@@ -1,6 +1,6 @@
 {
-	"name": "Gym Tracker",
-	"short_name": "Gym",
+	"name": "PuspFit",
+	"short_name": "PuspFit",
 	"description": "A simple offline-capable workout log.",
 	"id": "/",
 	"start_url": "/",
