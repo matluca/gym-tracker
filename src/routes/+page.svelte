@@ -8,6 +8,7 @@
 	import ExercisePicker from '#lib/components/ExercisePicker.svelte';
 	import SetEditor from '#lib/components/SetEditor.svelte';
 	import InstallHint from '#lib/components/InstallHint.svelte';
+	import LockerChip from '#lib/components/LockerChip.svelte';
 	import { auth } from '#lib/firebase/auth.svelte.js';
 	import { isConfigured } from '#lib/firebase/client.js';
 	import {
@@ -260,6 +261,8 @@
 		<p class="muted">{t.signingIn}</p>
 	{:else}
 		<InstallHint />
+
+		<LockerChip />
 
 		<section class="card">
 			<h2>{t.logSet}</h2>

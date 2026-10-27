@@ -157,6 +157,9 @@ changes nothing in the live project.
   Also hosts the install hint (`InstallHint.svelte`, state in `src/lib/install.svelte.ts`):
   an Install button where Chromium fires `beforeinstallprompt`, Share → Add to Home Screen
   steps in iOS Safari (which has no install API), nothing once installed or dismissed.
+  Above the log form, `LockerChip.svelte` keeps today's locker number
+  (`src/lib/locker.svelte.ts`): localStorage only, stamped with the local date, so it reads
+  as empty from the next day on. Not in Firestore on purpose.
 - `/history` — training days newest first, each listing exercises with set count and best
   set; tap a day to expand every set. Pages by `createdAt` (200 sets per "Load older") and
   hides the oldest, possibly-incomplete days — see `subscribeToHistory` for why the

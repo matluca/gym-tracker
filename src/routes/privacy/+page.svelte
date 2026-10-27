@@ -112,7 +112,7 @@
 					IndexedDB),
 				</li>
 				<li>die App-Dateien selbst für die Offline-Nutzung (Service Worker),</li>
-				<li>deine Sprach- und Uhrzeitformat-Wahl und die zuletzt angesehene Übung (localStorage).</li>
+				<li>deine Sprach- und Uhrzeitformat-Wahl, die zuletzt angesehene Übung und die Spindnummer des Tages (localStorage).</li>
 			</ul>
 			<p>Cookies zu Tracking- oder Werbezwecken setzen wir nicht.</p>
 
@@ -246,7 +246,7 @@
 				<li>your sign-in state (Firebase Authentication, IndexedDB),</li>
 				<li>a copy of your training data so the app works offline (Firestore, IndexedDB),</li>
 				<li>the app's own files for offline use (service worker),</li>
-				<li>your language and time format choices and the last exercise you viewed (localStorage).</li>
+				<li>your language and time format choices, the last exercise you viewed and today's locker number (localStorage).</li>
 			</ul>
 			<p>We do not set cookies for tracking or advertising.</p>
 
