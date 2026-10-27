@@ -224,7 +224,7 @@
 
 	function formatTime(date: Date | null): string {
 		if (!date) return t.syncing;
-		return new Intl.DateTimeFormat(i18n.locale, { timeStyle: 'short' }).format(date);
+		return new Intl.DateTimeFormat(i18n.locale, i18n.timeStyle).format(date);
 	}
 </script>
 

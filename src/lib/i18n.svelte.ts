@@ -7,15 +7,25 @@
  *
  * The chosen locale is remembered in localStorage (per device, not synced).
  * First visit falls back to the browser's language.
+ *
+ * The 12/24-hour clock is a separate preference: `auto` follows the locale's
+ * convention, otherwise it overrides it. Format times with `i18n.timeStyle`
+ * rather than a bare `timeStyle: 'short'` so the override applies.
  */
 
 export const LOCALES = ['en', 'de'] as const;
 export type Locale = (typeof LOCALES)[number];
 
+export const TIME_FORMATS = ['auto', '12', '24'] as const;
+export type TimeFormat = (typeof TIME_FORMATS)[number];
+
 const en = {
 	appTitle: 'Gym Tracker',
 	appDescription: 'A simple offline-capable workout log.',
 	language: 'Language',
+	timeFormat: 'Time format',
+	timeFormatAuto: 'Auto',
+	timeFormatAutoHint: 'Follow the language',
 	offline: 'Offline — changes sync when you reconnect',
 	authFailed: 'Auth failed.',
 	authHint:
@@ -156,6 +166,9 @@ const de: Messages = {
 	appTitle: 'Gym Tracker',
 	appDescription: 'Ein einfaches, offline-fähiges Trainingstagebuch.',
 	language: 'Sprache',
+	timeFormat: 'Uhrzeitformat',
+	timeFormatAuto: 'Auto',
+	timeFormatAutoHint: 'Wie die Sprache',
 	offline: 'Offline – Änderungen werden synchronisiert, sobald du wieder online bist',
 	authFailed: 'Anmeldung fehlgeschlagen.',
 	authHint:
@@ -316,6 +329,21 @@ function detectLocale(): Locale {
 
 let current = $state<Locale>(detectLocale());
 
+const TIME_FORMAT_KEY = 'timeFormat';
+
+function detectTimeFormat(): TimeFormat {
+	if (typeof window === 'undefined') return 'auto';
+	try {
+		const stored = localStorage.getItem(TIME_FORMAT_KEY);
+		if ((TIME_FORMATS as readonly (string | null)[]).includes(stored)) return stored as TimeFormat;
+	} catch {
+		// Storage can be unavailable (private mode, blocked site data).
+	}
+	return 'auto';
+}
+
+let currentTimeFormat = $state<TimeFormat>(detectTimeFormat());
+
 /**
  * Read `i18n.t.someKey` in markup; it re-renders when `i18n.locale` changes.
  */
@@ -333,5 +361,25 @@ export const i18n = {
 	},
 	get t(): Messages {
 		return messages[current];
+	},
+	get timeFormat(): TimeFormat {
+		return currentTimeFormat;
+	},
+	set timeFormat(next: TimeFormat) {
+		currentTimeFormat = next;
+		try {
+			localStorage.setItem(TIME_FORMAT_KEY, next);
+		} catch {
+			// Not fatal — the choice just won't survive a reload.
+		}
+	},
+	/**
+	 * `Intl.DateTimeFormat` options for a short time of day that honour the
+	 * 12/24-hour preference. `hourCycle` rather than `hour12`, because
+	 * `hour12: false` yields "24:05" past midnight in some engines.
+	 */
+	get timeStyle(): Intl.DateTimeFormatOptions {
+		if (currentTimeFormat === 'auto') return { timeStyle: 'short' };
+		return { timeStyle: 'short', hourCycle: currentTimeFormat === '12' ? 'h12' : 'h23' };
 	}
 };

@@ -95,7 +95,7 @@
 			year: 'numeric'
 		})
 	);
-	const timeFormat = $derived(new Intl.DateTimeFormat(i18n.locale, { timeStyle: 'short' }));
+	const timeFormat = $derived(new Intl.DateTimeFormat(i18n.locale, i18n.timeStyle));
 	const number = $derived(new Intl.NumberFormat(i18n.locale, { maximumFractionDigits: 1 }));
 
 	function toggle(key: string) {

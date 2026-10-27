@@ -3,6 +3,7 @@
 
 	import DeleteAccount from '#lib/components/DeleteAccount.svelte';
 	import LocaleSwitcher from '#lib/components/LocaleSwitcher.svelte';
+	import TimeFormatSwitcher from '#lib/components/TimeFormatSwitcher.svelte';
 	import {
 		auth,
 		authErrorCode,
@@ -285,6 +286,11 @@
 	<section class="card language">
 		<h2>{t.language}</h2>
 		<LocaleSwitcher />
+	</section>
+
+	<section class="card language">
+		<h2>{t.timeFormat}</h2>
+		<TimeFormatSwitcher />
 	</section>
 
 	{#if isConfigured && auth.user}

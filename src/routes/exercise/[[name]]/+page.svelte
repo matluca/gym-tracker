@@ -138,7 +138,7 @@
 	const dayFormat = $derived(
 		new Intl.DateTimeFormat(i18n.locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 	);
-	const timeFormat = $derived(new Intl.DateTimeFormat(i18n.locale, { timeStyle: 'short' }));
+	const timeFormat = $derived(new Intl.DateTimeFormat(i18n.locale, i18n.timeStyle));
 
 	function formatValue(value: number) {
 		return metric === 'volume' && value >= 10_000 ? compact.format(value) : number.format(value);
