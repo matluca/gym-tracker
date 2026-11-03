@@ -16,7 +16,7 @@
 	const t = $derived(i18n.t);
 	const de = $derived(i18n.locale === 'de');
 
-	const LAST_UPDATED = '2026-10-27';
+	const LAST_UPDATED = '2026-11-03';
 
 	const updated = $derived(
 		new Intl.DateTimeFormat(i18n.locale, { dateStyle: 'long' }).format(
@@ -112,7 +112,7 @@
 					IndexedDB),
 				</li>
 				<li>die App-Dateien selbst für die Offline-Nutzung (Service Worker),</li>
-				<li>deine Sprach- und Uhrzeitformat-Wahl, die zuletzt angesehene Übung und die Spindnummer des Tages (localStorage).</li>
+				<li>deine Sprach- und Uhrzeitformat-Wahl und die Spindnummer des Tages (localStorage).</li>
 			</ul>
 			<p>Cookies zu Tracking- oder Werbezwecken setzen wir nicht.</p>
 
@@ -246,7 +246,7 @@
 				<li>your sign-in state (Firebase Authentication, IndexedDB),</li>
 				<li>a copy of your training data so the app works offline (Firestore, IndexedDB),</li>
 				<li>the app's own files for offline use (service worker),</li>
-				<li>your language and time format choices, the last exercise you viewed and today's locker number (localStorage).</li>
+				<li>your language and time format choices and today's locker number (localStorage).</li>
 			</ul>
 			<p>We do not set cookies for tracking or advertising.</p>
 

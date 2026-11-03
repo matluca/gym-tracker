@@ -38,7 +38,7 @@
 		</svg>
 		<span>{i18n.t.history}</span>
 	</a>
-	<!-- Bare /exercise reopens the last exercise viewed on this device. -->
+	<!-- Bare /exercise opens the exercise selected on the Log tab. -->
 	<a href={resolve('/exercise/[[name]]', {})} aria-current={current === 'progress' ? 'page' : undefined}>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<path d="M4 19h16M5 15l4-4 3 3 7-7" />

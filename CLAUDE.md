@@ -167,11 +167,17 @@ changes nothing in the live project.
 - `/exercise/[[name]]` — the Progress tab: an exercise picker, then stat tiles, a chart
   (est. 1RM / top weight / volume per day) and every set grouped by day. `[name]` is the
   *stored* value (English for built-ins) and is optional: bare `/exercise` redirects to the
-  last exercise viewed on this device (localStorage), or shows an empty state. Build links
+  selected exercise (see below), or shows an empty state. Build links
   with `exerciseHref()`, never by hand — every exercise name in the app links here.
   Its "Log a set" button links to `/?exercise=<name>` (`logSetHref()`); the Log tab
   preselects that name, focuses the weight field and strips the param with
   `goto(…, { replace: true })`.
+
+The Log and Progress tabs share one selected exercise (`src/lib/selection.svelte.ts`), so
+switching tabs keeps it. It is session-only and in memory, scoped to the current uid, and
+seeded by `seedSelection()` from the most recently entered set (by `createdAt`) of the
+recent-sets subscription — so a fresh launch follows the user's data across devices. Not in
+localStorage on purpose.
 
 `initAuth()`, global body styles and the bottom `TabBar` (Log / History / Progress / Account) live in
 `+layout.svelte` so a deep link to any route

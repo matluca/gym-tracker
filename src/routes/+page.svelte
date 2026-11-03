@@ -30,6 +30,7 @@
 	import { atCurrentTime, toLocalDateString } from '#lib/dates.js';
 	import { i18n } from '#lib/i18n.svelte.js';
 	import { byExercise } from '#lib/progress.js';
+	import { seedSelection, selection } from '#lib/selection.svelte.js';
 
 	const t = $derived(i18n.t);
 
@@ -41,6 +42,9 @@
 	let saving = $state(false);
 	let online = $state(true);
 
+	// Shared with the Progress tab, so switching tabs keeps the selection.
+	const exercise = $derived(selection.exercise);
+
 	// Preselected by the Progress tab's "Log a set" link. Read once: the param
 	// is stripped from the URL on mount. Anything the rules would reject as an
 	// exercise name is ignored.
@@ -48,11 +52,14 @@
 		const value = page.url.searchParams.get(LOG_EXERCISE_PARAM)?.trim() ?? '';
 		return value.length <= 100 ? value : '';
 	})();
-
-	let exercise = $state(requested);
-	// Set once the field has been prefilled (or the user has picked something),
-	// so later snapshots never overwrite their choice.
-	let exerciseTouched = requested !== '';
+	// Applied once there is a uid to scope the selection to.
+	let pendingRequest = requested;
+	$effect(() => {
+		if (pendingRequest && auth.user) {
+			selection.exercise = pendingRequest;
+			pendingRequest = '';
+		}
+	});
 	// Focused once the form renders after arriving with a preselected exercise,
 	// so the weight can be typed straight away.
 	let focusWeight = requested !== '';
@@ -79,9 +86,9 @@
 	const exerciseOptions = $derived(
 		buildExerciseOptions(
 			customExercises,
-			// The requested name may be older than the recent-sets subscription
+			// The selected name may be older than the recent-sets subscription
 			// reaches; the picker only keeps a value that is one of its options.
-			[...workouts.map((w) => w.exercise), ...(requested ? [requested] : [])],
+			[...workouts.map((w) => w.exercise), ...(exercise ? [exercise] : [])],
 			i18n.locale
 		)
 	);
@@ -136,12 +143,7 @@
 			(next) => {
 				workouts = next;
 				listError = null;
-				// Wait for a non-empty snapshot: the first one can come from an empty
-				// local cache before server data arrives.
-				if (!exerciseTouched && next.length > 0) {
-					if (exercise === '') exercise = lastEntered(next)?.exercise ?? '';
-					exerciseTouched = true;
-				}
+				seedSelection(next);
 			},
 			(error) => (listError = error.message)
 		);
@@ -211,19 +213,6 @@
 		}
 	}
 
-	/**
-	 * The set entered most recently — by `createdAt`, not the training date, so
-	 * backdating an old session doesn't change what's preselected. A set still
-	 * waiting for its server timestamp is the newest.
-	 */
-	function lastEntered(list: Workout[]): Workout | undefined {
-		const entered = (w: Workout) => w.createdAt?.getTime() ?? Infinity;
-		return list.reduce<Workout | undefined>(
-			(best, w) => (!best || entered(w) > entered(best) ? w : best),
-			undefined
-		);
-	}
-
 	function formatTime(date: Date | null): string {
 		if (!date) return t.syncing;
 		return new Intl.DateTimeFormat(i18n.locale, i18n.timeStyle).format(date);
@@ -271,7 +260,7 @@
 					<label for="exercise">{t.exercise}</label>
 					<ExercisePicker
 						id="exercise"
-						bind:value={exercise}
+						bind:value={() => exercise, (v) => (selection.exercise = v)}
 						options={exerciseOptions}
 						recent={recentExercises(workouts, exercise)}
 						onAdd={handleAddExercise}

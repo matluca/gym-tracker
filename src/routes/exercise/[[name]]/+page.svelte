@@ -12,10 +12,8 @@
 		recentExercises,
 		exerciseHref,
 		exerciseLabel,
-		getLastViewedExercise,
 		logSetHref,
 		machineProductUrl,
-		setLastViewedExercise,
 		subscribeToExercises
 	} from '#lib/firebase/exercises.js';
 	import {
@@ -32,6 +30,7 @@
 		toSessions,
 		type Metric
 	} from '#lib/progress.js';
+	import { seedSelection, selection } from '#lib/selection.svelte.js';
 
 	const t = $derived(i18n.t);
 
@@ -41,15 +40,17 @@
 	const label = $derived(exerciseLabel(exercise, i18n.locale));
 	const productUrl = $derived(machineProductUrl(exercise, i18n.locale));
 
-	// Bare tab: reopen the last exercise viewed on this device. `replace`
-	// so Back doesn't bounce between /exercise and /exercise/X.
+	// Shared with the Log tab: viewing an exercise selects it there too, and
+	// the bare tab opens whatever is selected (seeded from the most recently
+	// entered set below). `replace` so Back doesn't bounce between /exercise
+	// and /exercise/X.
 	$effect(() => {
 		if (exercise) {
-			setLastViewedExercise(exercise);
+			selection.exercise = exercise;
 			return;
 		}
-		const last = getLastViewedExercise();
-		if (last) goto(exerciseHref(last), { replace: true });
+		const selected = selection.exercise;
+		if (selected) goto(exerciseHref(selected), { replace: true });
 	});
 
 	// Picker options: same sources as the Log tab, so every exercise you've
@@ -61,7 +62,14 @@
 		const uid = auth.user?.uid;
 		if (!uid) return;
 		const stopCustom = subscribeToExercises(uid, (n) => (customExercises = n), () => {});
-		const stopRecent = subscribeToWorkouts(uid, (n) => (recent = n), () => {});
+		const stopRecent = subscribeToWorkouts(
+			uid,
+			(n) => {
+				recent = n;
+				seedSelection(n);
+			},
+			() => {}
+		);
 		return () => {
 			stopCustom();
 			stopRecent();

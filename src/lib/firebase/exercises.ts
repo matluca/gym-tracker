@@ -176,25 +176,6 @@ export function recentExercises(workouts: Workout[], exclude: string, count = 3)
 	return out;
 }
 
-const LAST_VIEWED_KEY = 'lastViewedExercise';
-
-/** The exercise last opened in the Progress tab, per device. */
-export function getLastViewedExercise(): string | null {
-	try {
-		return localStorage.getItem(LAST_VIEWED_KEY);
-	} catch {
-		return null;
-	}
-}
-
-export function setLastViewedExercise(value: string): void {
-	try {
-		localStorage.setItem(LAST_VIEWED_KEY, value);
-	} catch {
-		// Not fatal — the tab just opens empty next time.
-	}
-}
-
 function exercisesCollection(uid: string) {
 	const { db } = getFirebase();
 	return collection(db, 'users', uid, 'exercises');
