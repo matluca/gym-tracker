@@ -66,6 +66,10 @@
 	let activeIndex = $state(-1);
 	let listEl = $state<HTMLUListElement>();
 	let inputEl = $state<HTMLInputElement>();
+	// Set when the input blurs because the whole page lost focus (screen lock,
+	// app switch). The browser refocuses the input on return, which mustn't
+	// reopen the list as if the user had tapped it.
+	let refocusPending = false;
 	// The last value this component wrote, so the effect below can tell a
 	// parent-driven change (e.g. clearing after save) from our own.
 	let lastWritten = value;
@@ -222,6 +226,10 @@
 	}
 
 	function handleFocus() {
+		if (refocusPending) {
+			refocusPending = false;
+			return;
+		}
 		openList();
 		// Select the prefilled name so typing replaces it instead of appending.
 		if (value) inputEl?.select();
@@ -278,6 +286,8 @@
 	}
 
 	function handleBlur() {
+		// Only on a page-level blur does the input stay the active element.
+		refocusPending = document.activeElement === inputEl;
 		open = false;
 		activeIndex = -1;
 		// Snap the text to the display label of a match, e.g. "back SQUAT"
