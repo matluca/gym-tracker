@@ -63,15 +63,18 @@ export function metricValue(session: Session, metric: Metric): number {
 }
 
 /**
- * Ids of sets that were a heaviest-weight PB at the time they were logged.
- * Ties don't count — matching your best isn't beating it.
+ * Ids of sets that were a PB at the time they were done, oldest first in:
+ * a new heaviest weight, or more reps than ever at that heaviest weight.
+ * Exact ties don't count — matching your best isn't beating it.
  */
 export function personalBestIds(workouts: Workout[]): Set<string> {
 	const ids = new Set<string>();
 	let best = -Infinity;
+	let bestReps = 0;
 	for (const w of workouts) {
-		if (w.weight > best) {
+		if (w.weight > best || (w.weight === best && w.reps > bestReps)) {
 			best = w.weight;
+			bestReps = w.reps;
 			ids.add(w.id);
 		}
 	}

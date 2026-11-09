@@ -23,6 +23,7 @@
 	} from '#lib/firebase/workouts.js';
 	import { i18n } from '#lib/i18n.svelte.js';
 	import {
+		bestSet,
 		e1rm,
 		metricValue,
 		personalBestIds,
@@ -121,7 +122,7 @@
 
 	const stats = $derived.by(() => {
 		if (workouts.length === 0) return null;
-		const heaviest = workouts.reduce((a, b) => (b.weight > a.weight ? b : a));
+		const heaviest = bestSet(workouts);
 		const bestE1rm = Math.max(...workouts.map((w) => e1rm(w.weight, w.reps)));
 		return { heaviest, bestE1rm };
 	});
