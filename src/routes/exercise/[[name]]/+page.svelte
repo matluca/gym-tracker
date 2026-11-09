@@ -123,7 +123,7 @@
 		if (workouts.length === 0) return null;
 		const heaviest = workouts.reduce((a, b) => (b.weight > a.weight ? b : a));
 		const bestE1rm = Math.max(...workouts.map((w) => e1rm(w.weight, w.reps)));
-		return { heaviest, bestE1rm, last: sessions[sessions.length - 1] };
+		return { heaviest, bestE1rm };
 	});
 
 	const metrics: { id: Metric; name: () => string }[] = [
@@ -215,7 +215,7 @@
 			<div class="stat">
 				<span class="stat-label">{t.totalSets}</span>
 				<span class="stat-value">{workouts.length}</span>
-				<span class="stat-sub">{dayFormat.format(stats.last.day)}</span>
+				<span class="stat-sub">{t.inSessions(sessions.length)}</span>
 			</div>
 		</section>
 
