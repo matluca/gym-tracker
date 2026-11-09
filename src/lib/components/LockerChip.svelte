@@ -1,6 +1,6 @@
 <script lang="ts">
 	/**
-	 * Today's locker number at the top of the Log tab: a quiet "+ Locker"
+	 * Today's locker number in the Log tab's header: a quiet "+ Locker"
 	 * button when unset, a chip with the number once set. Tapping either opens
 	 * an inline number field. See locker.svelte.ts for how it expires.
 	 */
@@ -97,7 +97,6 @@
 <style>
 	.locker {
 		display: flex;
-		margin-bottom: 1rem;
 	}
 
 	form {

@@ -230,6 +230,11 @@
 		{#if !online}
 			<span class="badge badge--offline">{t.offline}</span>
 		{/if}
+		{#if isConfigured && !auth.error && !auth.loading}
+			<div class="header-end">
+				<LockerChip />
+			</div>
+		{/if}
 	</header>
 
 	{#if !isConfigured}
@@ -250,8 +255,6 @@
 		<p class="muted">{t.signingIn}</p>
 	{:else}
 		<InstallHint />
-
-		<LockerChip />
 
 		<section class="card">
 			<h2>{t.logSet}</h2>
@@ -380,9 +383,13 @@
 	header {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: baseline;
+		align-items: center;
 		gap: 0.75rem;
 		margin-bottom: 1.5rem;
+	}
+
+	.header-end {
+		margin-left: auto;
 	}
 
 	h1 {
